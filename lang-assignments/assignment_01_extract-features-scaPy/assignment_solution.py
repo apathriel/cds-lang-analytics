@@ -22,6 +22,7 @@ def open_text_file(filepath):
             print("ERROR")
 
 def calculate_relative_frequency(document, count, per_how_many_words):
+    # explitize in readme
     return round((count/len(document)) * per_how_many_words, 2)
 
 def process_folders(input_path, output_path, model):
@@ -110,7 +111,9 @@ def count_occurances_type(document):
 
 if __name__ == "__main__":
     # load model, language class initialized through setup.sh
+    # select file, inquirer-inspired 
     nlp = spacy.load("en_core_web_md")
     input_folder_path = os.path.join("data", "input")
     output_folder_path = os.path.join("data", "output")
+    
     process_folders(input_folder_path, output_folder_path, nlp)
