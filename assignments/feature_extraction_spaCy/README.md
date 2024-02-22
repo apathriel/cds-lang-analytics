@@ -10,10 +10,10 @@ The project utilizes the 'en_core_web_md' model from spaCy, which is made availa
 ```
 └── feature_extraction_spaCy
 	├── data
-	│	├── input
-	│	└── output
+	│   ├── input
+	│   └── output
 	├── src
-	│	└── process_corpus.py
+	│   └── process_corpus.py
 	├── setup.sh
 	├── requirements.txt
 	├── README.md
