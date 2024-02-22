@@ -1,1 +1,1 @@
-This file will contain the readme for this assignment.
+# Extracting lnguistic information from a corpus using spaCy
