@@ -7,7 +7,6 @@ The project concerns processing a number of inputs, in the form of text files, s
 The project utilizes the 'en_core_web_md' model from spaCy, which is made available through the setup.sh script, but other models can be installed and specified.
 
 ## Project structure
----
 ```
 └── feature_extraction_spaCy
 	├── data
@@ -21,7 +20,6 @@ The project utilizes the 'en_core_web_md' model from spaCy, which is made availa
 ```
 
 ## Setup
----
 ***Dependencies***
 Please ensure you have the following dependencies installed on your system:
 - **Python**: `version 3.12.2`
