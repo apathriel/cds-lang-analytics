@@ -5,11 +5,11 @@ Author: Gabriel Høst Andersen
 Date: 22-02-2024
 """
 
-import pandas as pd
-import spacy
-import os
 import chardet
+import os
+import pandas as pd
 import re
+import spacy
 
 def clean_text(text):
     """
