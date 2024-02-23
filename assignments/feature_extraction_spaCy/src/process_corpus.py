@@ -68,6 +68,22 @@ def calculate_relative_frequency(document, count, per_how_many_words=10000, remo
     else:
         return round(count / len(document) * per_how_many_words, 2)
 
+def contains_subdirectory(directory):
+    """
+    Checks if a directory contains another directory.
+
+    Args:
+        directory (str): The path to the directory to check.
+
+    Returns:
+        bool: True if the directory contains another directory, False otherwise.
+    """
+    for name in os.listdir(directory):
+        if os.path.isdir(os.path.join(directory, name)):
+            return True
+    return False
+
+
 def process_folders(input_path, output_path, model, remove_punctuation=False):
     """
     Processes all text files in the given input folder and its subfolders, and writes the results to CSV files in the designated output folder.
@@ -82,6 +98,10 @@ def process_folders(input_path, output_path, model, remove_punctuation=False):
         remove_punctuation (bool, optional): Whether to remove punctuation tokens from the documents before calculating the relative frequency.
     """
     input_folders = os.listdir(input_path)
+
+    # somewhat crude check, could do try/except and further modularize this long function, and add functioanlity for no subfolders
+    if not contains_subdirectory(input_path):
+        return print("[ERROR] No subfolders found in the input folder.")
 
     for sub_folder in input_folders:
         print(f"[SYSTEM] Processing subfolder {sub_folder}")
