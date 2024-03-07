@@ -7,9 +7,10 @@ Date: 22-02-2024
 
 import chardet
 import os
-import pandas as pd
 import re
+import pandas as pd
 import spacy
+from tqdm import tqdm
 
 def clean_text(text):
     """
@@ -103,14 +104,12 @@ def process_folders(input_path, output_path, model, remove_punctuation=False):
     if not contains_subdirectory(input_path):
         return print("[ERROR] No subfolders found in the input folder.")
 
-    for sub_folder in input_folders:
-        print(f"[SYSTEM] Processing subfolder {sub_folder}")
+    for sub_folder in tqdm(input_folders, desc="Processing subfolders"):
         input_sub_folder_path = os.path.join(input_path, sub_folder)
         input_sub_folders = os.listdir(input_sub_folder_path)
         df_list = []  # create list for storing dataframes, append each, then concatenate all at once
 
-        for file in input_sub_folders:
-            print(f"[SYSTEM] Processing file: {file}")
+        for file in tqdm(input_sub_folders, desc=f"Processing files in {sub_folder}"):
             text = open_text_file(os.path.join(input_sub_folder_path, file))
             doc = model(text)
             values_dict = count_occurances_type(doc, remove_punctuation) | count_occurances_named_entity(doc)
@@ -128,7 +127,6 @@ def process_folders(input_path, output_path, model, remove_punctuation=False):
 
         df = pd.concat(df_list, ignore_index=True)  # concatenate all the DataFrames at once
         df.to_csv(f"{os.path.join(output_path, sub_folder + '_table' + '.csv')}", index=False)
-        print('[SYSTEM] Subfolder has been processed')
     return print('[SYSTEM] All folders have been processed')
 
 def count_occurances_named_entity(document):
@@ -209,7 +207,7 @@ def count_occurances_type(document, remove_punctuation=False):
 if __name__ == "__main__":
     # script is intended to be run from the assignment_01 directory
     nlp = spacy.load("en_core_web_md")
-    input_folder_path = os.path.join("data", "input")
-    output_folder_path = os.path.join("data", "output")
+    input_folder_path = os.path.join("input")
+    output_folder_path = os.path.join("output")
     
     process_folders(input_folder_path, output_folder_path, nlp)
