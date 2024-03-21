@@ -2,6 +2,8 @@ import difflib
 import os
 import pandas as pd
 
+from utils.utilities import remove_punctuation_from_list, escape_punctuation_in_list
+
 def load_csv_to_df(file_path: str):
     print(f"[SYSTEM] Attempting to load dataset {os.path.basename(file_path)}...")
     
@@ -11,6 +13,12 @@ def load_csv_to_df(file_path: str):
         return df
     except FileNotFoundError:
         raise FileNotFoundError(f"File not found: {file_path}")
+    
+def load_existing_df_or_create_new_df(data_path, columns=[]):
+    if os.path.isfile(data_path):
+        return load_csv_to_df(data_path)
+    else:
+        return pd.DataFrame(columns=columns)
 
 def find_closest_match(df, column_name: str, query: str, n=1):
     unique_values = df[column_name].unique()
@@ -35,11 +43,16 @@ def drop_empty_rows(df):
     df = df.dropna(how='all')
     return df
 
-def filter_df_by_term_occurance(df, column_name: str, term_list: list):
-    pattern = '|'.join(term_list)
+def filter_df_by_term_occurance(df, column_name: str, term_list: list, remove_punctuation=False):
+    if remove_punctuation:
+        pattern = '|'.join(remove_punctuation_from_list(term_list))
+    else:
+        pattern = '|'.join(escape_punctuation_in_list(term_list))
+
     return df[df[column_name].str.contains(pattern, na=False)]
 
-def write_csv_to_file(df, file_path, remove_empty_rows=True):
+def write_csv_to_file(df, dir_path, file_name, remove_empty_rows=True):
+    os.makedirs(dir_path, exist_ok=True)
     if remove_empty_rows:
         df = drop_empty_rows(df)
-    df.to_csv(file_path, index=False)
+    df.to_csv(os.path.join(dir_path, file_name), index=False)

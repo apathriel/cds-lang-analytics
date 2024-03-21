@@ -13,7 +13,7 @@ def load_gensim_model(model_name: str):
 def get_word_embeddings(model, parser, word: str):
     print(f"[SYSTEM] Attempting to get word embeddings for: {word} from model...")
     try:
-        most_similar = model.most_similar(word)
+        most_similar = model.most_similar(word, topn=10)
         print(f"[SYSTEM] Word embeddings for: {word} have been retrieved successfully!")
         return most_similar
     except KeyError:
