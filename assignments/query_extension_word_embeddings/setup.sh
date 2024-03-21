@@ -1,8 +1,10 @@
 #!/usr/bin/bash
 
-python -m venv a03_env
+python -m pip install --user virtualenv
 
-source ./a03_env/bin/activate
+python -m virtualenv a03_env
+
+source ./a03_env/Scripts/activate
 
 pip install --upgrade pip
 pip install -r requirements.txt
