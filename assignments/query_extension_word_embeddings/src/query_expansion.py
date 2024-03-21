@@ -28,7 +28,7 @@ def validate_artist_input(df, parser, artist_to_check):
     print(f"[SYSTEM] Validating artist input: {artist_to_check}, checking presence in dataset...")
     if not check_if_artist_in_dataset(df, artist_to_check):
       closest_match = find_closest_match(df, "artist", artist_to_check)
-      closest_match_string = f"Did you perhaps mean: '{''.join(find_closest_match(df, "artist", artist_to_check))}'?" if closest_match else 'No similar artist found in dataset.'
+      closest_match_string = f"Did you perhaps mean: {''.join(find_closest_match(df, 'artist', artist_to_check))}?" if closest_match else 'No similar artist found in dataset.'
       parser.exit(1, message=f"[PARSER_ERROR] Artist '{artist_to_check}' not found in dataset. {closest_match_string}")
     print(f"[SYSTEM] Artist '{artist_to_check}' found in dataset!")
     return filter_df_rows_by_column_value(df, "artist", artist_to_check)
