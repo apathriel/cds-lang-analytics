@@ -62,7 +62,7 @@ python src/query_expansion.py -a -q
 ### ⚒️ Usage 
 The project is run from the `query_expansion.py` script, which manages the CLI. Please refer to the reference below for documentation of the CLI's functionality. Generally, the script accepts a list of artists and a query to expand. The query is expanded through word embeddings. A list of the 10 most similar words is compared to each song within the specified artists's corpus. The percentage of the artists's corpus containing elements from the word embeddings are printed and optionally saved to a .csv file.
 
-### 💻 CLI Reference
+## 💻 CLI Reference
 Please use the `--help` flag for an overview of the CLI functionality.
 
 |flag     |shorthand|description                                               |type|required|
