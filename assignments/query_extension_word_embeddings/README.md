@@ -23,19 +23,19 @@ By default, the project utilizes the 'glove-wiki-gigaword-50' model from gensim.
 └── query_extension_word_embeddings
 	├── in
 	│   └── spotify_million_dataset.csv
-    ├── out
-    │   └── query_results.csv    
+	├── out
+	│   └── query_results.csv    
 	├── src
 	│   ├── query_expansion.py
-    │   └── utils
-    │        ├── cli_utils.py
-    │        ├── data_processing_utils.py
-    │        ├── model_utils.py
-    │        └── utilities.py
+	│       └── utils
+	│        ├── cli_utils.py
+	│        ├── data_processing_utils.py
+	│        ├── model_utils.py
+	│        └── utilities.py
 	├── README.md
 	├── requirements.txt
 	├── setup_unix.sh
-    └── setup_win.sh
+	└── setup_win.sh
 ```
 
 ## ⚙️ Setup
