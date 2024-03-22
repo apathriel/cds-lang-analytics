@@ -54,7 +54,11 @@ cd query_extension_word_embeddings
 ``` sh
 bash setup_unix.sh
 ```
-4. Run the main script through the CLI.
+4. Activate the virtual environment (OS-specific)
+``` sh
+source a03_env/bin/activate
+```
+5. Run the main script through the CLI.
 ```sh
 python src/query_expansion.py -a -q
 ```
