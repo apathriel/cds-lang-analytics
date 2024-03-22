@@ -60,7 +60,7 @@ source a03_env/bin/activate
 ```
 5. Run the main script through the CLI.
 ```sh
-python src/query_expansion.py -a -q
+python src/query_expansion.py -a [ARTIST] -q [QUERY]
 ```
 
 ### ⚒️ Usage 
