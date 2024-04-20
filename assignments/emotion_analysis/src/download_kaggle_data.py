@@ -122,7 +122,6 @@ class DirectoryManipulator:
     def dataset_dir_title(self, value: str) -> None:
         self._dataset_dir_title = value
 
-
 class KaggleCredentialsManager:
     def __init__(
         self,
@@ -284,12 +283,11 @@ class KaggleDatasetManager:
         except Exception as e:
             logger.error(f"An error occurred: {e}")
 
-
 @click.command()
 @click.option("--dataset_url", "-u", prompt=True, type=str, help="URL of the desired Kaggle dataset to be downloaded.", required=True)
 @click.option('--data_path', "-d", default=Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")), help='Path to download the dataset.')
 @click.option("--dir_rename_val", "-r", default="in", help="Name of the directory to rename the dataset folder to.")
-@click.option("--dir_manipulation_type", "-m", default="None", help="Type of directory manipulation to perform. Options: 'rename', 'parent_move' or 'None'. Default: 'None'.")
+@click.option("--dir_manipulation_type", "-m", type=str, default="None", help="Type of directory manipulation to perform. Options: 'rename', 'parent_move' or 'None'. Default: 'None'.")
 def main(dataset_url, data_path, dir_rename_val, dir_manipulation_type):
 
     creds = KaggleCredentialsManager("kaggle.json")
