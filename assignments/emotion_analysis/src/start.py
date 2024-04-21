@@ -4,6 +4,17 @@ import pandas as pd
 from pathlib import Path
 import matplotlib.pyplot as plt
 import os
+import math
+
+import logging
+
+def get_logger(name: str):
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter('[%(levelname)s] - %(asctime)s - %(message)s'))
+    logger.addHandler(handler)
+    return logger
 
 def get_filenames_in_dir(directory, list_sub_dirs=False):
     return os.listdir(directory) if list_sub_dirs else [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
@@ -15,6 +26,11 @@ def save_first_n_rows_to_csv(df: pd.DataFrame, num_rows: int, file_path: Path) -
 
 def load_csv(file_path: Path) -> pd.DataFrame:
     return pd.read_csv(file_path)
+
+def save_df_to_csv(df: pd.DataFrame, file_path: Path) -> None:
+    logger.info(f"Attempting to save csv from pandas dataframe...")
+    df.to_csv(file_path, index=False)
+    logger.info(f"CSV has been successfully saved to {file_path}!")
 
 def get_unique_values(df: pd.DataFrame, column: str) -> list:
     return df[column].unique()
@@ -29,8 +45,10 @@ def convert_column_to_data_type(df: pd.DataFrame, column: str, data_type: type) 
     df[column] = df[column].astype(data_type)
     return df
 
+logger = get_logger(__name__)
 data_path = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "in"))
 df = load_csv(data_path / "Game_of_Thrones_Script.csv")
+
 df = convert_column_to_data_type(df, 'Sentence', str)
 
 classifier = pipeline(task="text-classification", 
@@ -38,7 +56,6 @@ classifier = pipeline(task="text-classification",
                       top_k=1,
                       framework='tf'
                       )
-
 
 results = [classifier(sentence)[0][0] for sentence in tqdm(df['Sentence'])]
 
@@ -82,17 +99,16 @@ def temp_plot(num_of_subplots: int, plot_title: str, plot_colors: list):
     # Show the plot
     plt.show()
 
-import math
-
 def plot_emotion_by_season(df):
     # Calculate the number of rows needed for the grid
-    num_rows = math.ceil(df.shape[0] / 3)
+    num_rows = math.ceil(df.shape[0] / 2)
+    num_cols = 2 if df.shape[0] % 2 == 0 else 1
 
     # Create a subplot for each emotion in a 2-column grid
-    fig, axs = plt.subplots(num_rows, 2, figsize=(20, 7*num_rows))
+    fig, axs = plt.subplots(num_rows, num_cols, figsize=(20, 7*num_rows))
 
-    # Flatten the axes array and remove extra subplots
-    axs = axs.flatten()[:df.shape[0]]
+    # Flatten the axes array
+    axs = axs.flatten()
 
     fig.patch.set_edgecolor('black')
     fig.patch.set_linewidth(1)
@@ -113,12 +129,11 @@ def plot_emotion_by_season(df):
 
     # Show the plot
     plt.show()
-
 # Plot the emotion counts by season
 temp_plot(num_seasons, 'Distribution of emotion labels per season', PLOT_COLORS)
 
 # Plot the relative frequency of emotion labels across total lines of season
-plot_emotion_by_season(emotion_counts_by_season.unstack(level=0))
+# plot_emotion_by_season(emotion_counts_by_season.unstack(level=0))
 # Plot the relative frequency of emotion labels by season from total num of label occurances
 
 # Save the DataFrame back to a CSV file
