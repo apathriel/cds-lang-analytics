@@ -5,10 +5,6 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import os
 
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-
-data_path = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "in"))
-
 def get_filenames_in_dir(directory, list_sub_dirs=False):
     return os.listdir(directory) if list_sub_dirs else [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
 
@@ -33,7 +29,8 @@ def convert_column_to_data_type(df: pd.DataFrame, column: str, data_type: type) 
     df[column] = df[column].astype(data_type)
     return df
 
-df = load_csv(data_path / "first_10_rows.csv")
+data_path = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "in"))
+df = load_csv(data_path / "Game_of_Thrones_Script.csv")
 df = convert_column_to_data_type(df, 'Sentence', str)
 
 classifier = pipeline(task="text-classification", 
