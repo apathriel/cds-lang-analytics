@@ -16,6 +16,7 @@ import kaggle
 
 logger = get_logger(__name__)
 
+
 class DirectoryManipulator:
     def __init__(self, data_path: Union[str, Path], dir_rename_val: str = "in") -> None:
         self.data_path: Union[str, Path] = data_path
@@ -28,13 +29,9 @@ class DirectoryManipulator:
 
     async def rename_dataset_folder(self) -> None:
         try:
-            logger.info(
-                f"Renaming dataset folder to '{self.dir_target_name_val}'..."
-            )
+            logger.info(f"Renaming dataset folder to '{self.dir_target_name_val}'...")
             await aiofiles.os.rename(self.dataset_dir_title, self.dir_target_name_val)
-            logger.info(
-                f"Dataset folder renamed to '{self.dir_target_name_val}'!"
-            )
+            logger.info(f"Dataset folder renamed to '{self.dir_target_name_val}'!")
         except FileExistsError:
             logger.error(
                 f"A directory with the name {self.dir_target_name_val} already exists."
@@ -58,7 +55,7 @@ class DirectoryManipulator:
                 f"An error occurred while trying to create directory {directory_path}: {str(e)}"
             )
         except Exception as e:
-            logger.error(f"An unexpected error occurred: {e}") 
+            logger.error(f"An unexpected error occurred: {e}")
 
     async def move_to_initialized_container_folder(
         self, file_to_move: Union[str, Path]
@@ -66,21 +63,21 @@ class DirectoryManipulator:
         if not await self.check_directory_exists(self.dir_target_name_val):
             await self.create_directory(self.dir_target_name_val)
         try:
-                logger.info(
-                    f"Moving file {file_to_move} to directory {self.dir_target_name_val}..."
-                )
-                await aiofiles.os.rename(
-                    Path(file_to_move),
-                    Path(self.dir_target_name_val) / Path(file_to_move),
-                )
-                logger.info(
-                    f"File {file_to_move} moved to directory {self.dir_target_name_val} successfully!"
-                )
+            logger.info(
+                f"Moving file {file_to_move} to directory {self.dir_target_name_val}..."
+            )
+            await aiofiles.os.rename(
+                Path(file_to_move),
+                Path(self.dir_target_name_val) / Path(file_to_move),
+            )
+            logger.info(
+                f"File {file_to_move} moved to directory {self.dir_target_name_val} successfully!"
+            )
         except Exception as e:
-                logger.error(
-                    f"An error occurred while trying to move file {file_to_move} to directory {self.dir_target_name_val}."
-                )
-                logger.info(e)
+            logger.error(
+                f"An error occurred while trying to move file {file_to_move} to directory {self.dir_target_name_val}."
+            )
+            logger.info(e)
 
     async def delete_directory(self, directory_path: Union[str, Path]) -> None:
         loop = asyncio.get_event_loop()
@@ -94,9 +91,7 @@ class DirectoryManipulator:
                 f"Permission denied. Cannot delete directory {directory_path}."
             )
         except NotADirectoryError:
-            logger.error(
-                f"The provided path {directory_path} is not a directory."
-            )
+            logger.error(f"The provided path {directory_path} is not a directory.")
         except OSError as e:
             logger.error(
                 f"An error occurred while trying to delete directory {directory_path}: {str(e)}"
@@ -121,6 +116,7 @@ class DirectoryManipulator:
     @dataset_dir_title.setter
     def dataset_dir_title(self, value: str) -> None:
         self._dataset_dir_title = value
+
 
 class KaggleCredentialsManager:
     def __init__(
@@ -259,9 +255,7 @@ class KaggleDatasetManager:
     async def download_kaggle_dataset(self) -> None:
         self.authenticate_kaggle_api()
         try:
-            logger.info(
-                f"Attempting to download dataset '{self.dataset_url_slug}'..."
-            )
+            logger.info(f"Attempting to download dataset '{self.dataset_url_slug}'...")
             kaggle.api.dataset_download_files(
                 self.dataset_url_slug,
                 path=self.data_path,
@@ -269,9 +263,7 @@ class KaggleDatasetManager:
                 force=self.force_download,
                 quiet=False,
             )
-            logger.info(
-                f"Dataset '{self.dataset_dir_title}' downloaded successfully!"
-            )
+            logger.info(f"Dataset '{self.dataset_dir_title}' downloaded successfully!")
 
             if self.dir_manipulation_type == "rename":
                 self.dir_manager.dataset_dir_title = self.dataset_dir_title
@@ -283,11 +275,35 @@ class KaggleDatasetManager:
         except Exception as e:
             logger.error(f"An error occurred: {e}")
 
+
 @click.command()
-@click.option("--dataset_url", "-u", prompt=True, type=str, help="URL of the desired Kaggle dataset to be downloaded.", required=True)
-@click.option('--data_path', "-d", default=Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")), help='Path to download the dataset.')
-@click.option("--dir_rename_val", "-r", default="in", help="Name of the directory to rename the dataset folder to.")
-@click.option("--dir_manipulation_type", "-m", type=str, default="None", help="Type of directory manipulation to perform. Options: 'rename', 'parent_move' or 'None'. Default: 'None'.")
+@click.option(
+    "--dataset_url",
+    "-u",
+    prompt=True,
+    type=str,
+    help="URL of the desired Kaggle dataset to be downloaded.",
+    required=True,
+)
+@click.option(
+    "--data_path",
+    "-d",
+    default=Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")),
+    help="Path to download the dataset.",
+)
+@click.option(
+    "--dir_rename_val",
+    "-r",
+    default="in",
+    help="Name of the directory to rename the dataset folder to.",
+)
+@click.option(
+    "--dir_manipulation_type",
+    "-m",
+    type=str,
+    default="None",
+    help="Type of directory manipulation to perform. Options: 'rename', 'parent_move' or 'None'. Default: 'None'.",
+)
 def main(dataset_url, data_path, dir_rename_val, dir_manipulation_type):
 
     creds = KaggleCredentialsManager("kaggle.json")
@@ -300,11 +316,12 @@ def main(dataset_url, data_path, dir_rename_val, dir_manipulation_type):
         data_path=data_path,
         dir_manipulation_type=dir_manipulation_type,
         dir_manager=manager,
-        dir_rename_val=dir_rename_val
+        dir_rename_val=dir_rename_val,
     )
 
     downloader.list_files_in_kaggle_dataset()
     asyncio.run(downloader.download_kaggle_dataset())
+
 
 if __name__ == "__main__":
     main()
