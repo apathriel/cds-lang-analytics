@@ -11,7 +11,7 @@ import shutil
 from typing import *
 
 import aiofiles.os
-from kaggle_logger import get_logger
+from assignments.emotion_analysis.src.logger_utils import get_logger
 import kaggle
 
 logger = get_logger(__name__)
