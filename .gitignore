@@ -1,1 +1,8 @@
 assignments/emotion_analysis/kaggle.json
+
+**/input/*
+**/in/*
+!**/in/.gitkeep
+
+__pycache__/
+*.pyc
