@@ -1,19 +1,21 @@
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Dict, Union
 
 import pandas as pd
 import spacy
 from spacy.language import Language
-from spacy.tokens import Doc, Token
+from spacy.tokens import Doc
 from tqdm import tqdm
 
-from utilities import get_logger, load_text_file
+from cli_utilities import parse_cli_arguments
+from data_processing_utilities import export_df_as_csv, load_text_file
+from utilities import get_logger
 
 logger = get_logger(__name__)
 
 
 def calculate_relative_frequency(
-    document: List[Token],
+    document: Doc,
     count: int,
     per_how_many_words: int = 10000,
     remove_punctuation: bool = True,
@@ -40,12 +42,12 @@ def calculate_relative_frequency(
     return round(relative_frequency, 2)
 
 
-def process_text_files_by_directory(
+def extract_linguistic_information_pipeline(
     input_path: Path,
     output_path: Path,
     model: Union[Language, str],
     remove_punctuation: bool = False,
-) -> None:
+) -> str:
     """
     Processes all text files in the given input folder and its subfolders, and writes the results to CSV files in the designated output folder.
 
@@ -57,16 +59,17 @@ def process_text_files_by_directory(
         output_path (str): The path to the output folder.
         model (spacy.lang): The spaCy language model to use for NLP.
         remove_punctuation (bool, optional): Whether to remove punctuation tokens from the documents before calculating the relative frequency.
+
+    Returns:
+        str: Message indicating successful completion of the operation.
+
     """
     if not any(input_path.iterdir()):
-        return print("[ERROR] No subfolders found in the input folder.")
+        return logger.error("No subfolders found in the input folder.")
 
     for sub_directory in tqdm(input_path.iterdir(), desc="Processing subfolders"):
         if sub_directory.is_dir():
-            df_list = (
-                []
-            )  # create list for storing dataframes, append each, then concatenate all at once
-
+            dataframes_to_concatenate = []  # create list for storing dataframes, append each, then concatenate all at once
             for file in tqdm(
                 sub_directory.iterdir(),
                 desc=f"Processing files in directory {sub_directory.name}",
@@ -89,17 +92,21 @@ def process_text_files_by_directory(
                         "No. Unique ORG": [values_dict["ORG"]],
                     }
                 )
-                df_list.append(create_df_row)  # append the DataFrame to a list
+                dataframes_to_concatenate.append(
+                    create_df_row
+                )  # append the DataFrame to a list
 
             df = pd.concat(
-                df_list, ignore_index=True
+                dataframes_to_concatenate, ignore_index=True
             )  # concatenate all the DataFrames at once
-            df = df.sort_values("Filename")
-            df.to_csv(output_path / f"{sub_directory.name}_table.csv", index=False)
+            df = df.sort_values("Filename")  # sort the DataFrame by filename
+            export_df_as_csv(df, output_path, f"{sub_directory.name}_table.csv")  # export the DataFrame to a CSV file
         else:
-            print(f"\n[ERROR] Skipping {sub_directory.name} is not a directory.")
+            logger.error(f"File {sub_directory.name} is not a directory.")
             continue
-    return print("[SYSTEM] All folders have been processed")
+
+    return "Dataframes concatenated and exported successfully!"
+    
 
 
 def calculate_named_entity_occurrences(document: Doc) -> Dict[str, int]:
@@ -131,9 +138,9 @@ def calculate_named_entity_occurrences(document: Doc) -> Dict[str, int]:
                 case _:
                     continue
         except TypeError:
-            print("[ERROR] Value is of wrong type")
+            logger.error("TypeError - Value is of wrong type")
         except KeyError:
-            print("[ERROR] Key does not exist :(")
+            logger.error("KeyError -  Key does not exist :(")
 
     # dictionary comprehension - create new dict applying len function to each key
     return {label: len(count) or 0 for label, count in entity_counts.items()}
@@ -145,7 +152,7 @@ def calculate_token_type_occurrences(
     """
     Counts the occurrences of certain types of tokens in a spacy document object.
 
-    Args:
+    Parameters:
         document (spacy.doc): The document to analyze, represented as a spaCy Doc object.
 
     Returns:
@@ -168,9 +175,9 @@ def calculate_token_type_occurrences(
                 case _:
                     continue
         except TypeError:
-            print("[ERROR] Value is not a number")
+            logger.error("[TypeError] Value is of wrong type")
         except KeyError:
-            print("[ERROR] Key does not exist :(")
+            logger.error("[KeyError] Key does not exist :(")
 
     return {
         key: calculate_relative_frequency(document, value, 10000, remove_punctuation)
@@ -179,14 +186,27 @@ def calculate_token_type_occurrences(
 
 
 def main():
-    # Load the spaCy model
-    nlp = spacy.load("en_core_web_md")
+    # Get the command-line arguments
+    cli_args = parse_cli_arguments()
 
-    # Intialize the input and output folder paths
-    input_folder_path = Path(__file__).parent / ".." / "in"
-    output_folder_path = Path(__file__).parent / ".." / "out"
+    # Try to load the spaCy model, download it if it's not found
+    try:
+        nlp = spacy.load(cli_args.model)
+    except OSError:
+        logger.error(f"{cli_args.model} not found. Attempting to download model...")
+        spacy.cli.download(cli_args.model)
+        nlp = spacy.load(cli_args.model)
 
-    process_text_files_by_directory(input_folder_path, output_folder_path, nlp)
+    # Initialize the input and output folder paths. File paths are expected to be relative to the src folder. Within project root.
+    input_folder_path = Path(__file__).parent / ".." / cli_args.input_path
+    output_folder_path = Path(__file__).parent / ".." / cli_args.output_path
+
+    # Extract linguistic information from the text files
+    extract_linguistic_information_pipeline(
+        input_path=input_folder_path, 
+        output_path=output_folder_path,
+        model=nlp
+    )
 
 
 if __name__ == "__main__":
