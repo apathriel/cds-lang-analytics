@@ -6,3 +6,5 @@ assignments/emotion_analysis/kaggle.json
 
 __pycache__/
 *.pyc
+
+env
