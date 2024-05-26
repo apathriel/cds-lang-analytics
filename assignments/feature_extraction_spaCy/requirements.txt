@@ -1,5 +1,4 @@
-pyarrow
-pandas
-spacy
-chardet
-tqdm
+chardet==5.2.0
+pandas==2.2.2
+spacy==3.7.4
+tqdm==4.66.2
