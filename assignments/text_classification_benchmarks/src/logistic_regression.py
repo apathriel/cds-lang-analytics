@@ -13,7 +13,7 @@ from sklearn.metrics import classification_report
 from data_processing_utilities import (
     load_labeled_data_as_df,
     save_classification_report_to_txt,
-    save_cross_validated_scores_to_txt,
+    save_cross_validated_scores_to_csv,
     save_object_as_joblib,
     prepare_data_for_model_training,
 )
@@ -53,7 +53,7 @@ def logistic_regression_news_classification_pipeline(
         logger.info(f"Cross-validating with {cv_fold} folds...")
         scores = cross_val_score(classifier, X_train_feats, y_train, cv=cv_fold)
         logger.info(f"Cross-validation complete. Cross-validated mean score: {round(mean(scores), 2)}")
-        save_cross_validated_scores_to_txt(scores, report_path, "logistic_regression_cross_validated_scores")
+        save_cross_validated_scores_to_csv(scores, report_path, "logistic_regression_cross_validated_scores")
         
 
     save_classification_report_to_txt(

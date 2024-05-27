@@ -26,11 +26,11 @@ def load_labeled_data_as_df(path_to_data: Path) -> pd.DataFrame:
     return pd.read_csv(path_to_data)
 
 
-def save_cross_validated_scores_to_txt(
+def save_cross_validated_scores_to_csv(
     scores: List[float], output_dir: Path, file_name: str, decimals: int = 3
 ):
     """
-    Save cross-validated scores to a text file.
+    Save cross-validated scores to a CSV file.
 
     Parameters:
         scores (List[float]): The list of cross-validated scores.
@@ -39,16 +39,20 @@ def save_cross_validated_scores_to_txt(
         decimals (int, optional): The number of decimal places to round the scores to. Defaults to 3.
 
     Raises:
-        Exception: If there is an error while saving the scores.
+        Exception: Raise if there is an error while saving the scores.
 
     """
     try:
         output_dir.mkdir(parents=True, exist_ok=True)
-        with open(output_dir / f"{file_name}.txt", "w") as file:
-            file.write("Cross-validated scores:\n")
-            for i, score in enumerate(scores, 1):
-                file.write(f"Fold {i}: {round(score, decimals)}\n")
-            file.write(f"Mean score: {round(mean(scores), decimals)}\n")
+        scores_df = pd.DataFrame(scores, columns=["Score"])
+        scores_df["Score"] = scores_df["Score"].round(decimals)
+        scores_df["Fold"] = range(1, len(scores) + 1)
+        scores_df = scores_df[["Fold", "Score"]]
+        scores_df.loc[len(scores_df)] = [
+            "Mean score",
+            scores_df["Score"].mean().round(decimals),
+        ]
+        scores_df.to_csv(output_dir / f"{file_name}.csv", index=False)
     except Exception as e:
         logger.error(f"Failed to save cross-validated scores: {e}")
 

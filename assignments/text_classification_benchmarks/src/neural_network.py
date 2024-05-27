@@ -1,5 +1,4 @@
 from pathlib import Path
-from statistics import mean
 from typing import Any, Dict, Optional, Union
 
 import numpy as np
@@ -12,7 +11,7 @@ from sklearn.metrics import classification_report
 from data_processing_utilities import (
     load_labeled_data_as_df,
     save_classification_report_to_txt,
-    save_cross_validated_scores_to_txt,
+    save_cross_validated_scores_to_csv,
     save_object_as_joblib,
     prepare_data_for_model_training,
 )
@@ -90,7 +89,7 @@ def train_neural_network_classifier_model(
         logger.info(
             f"Cross-validation complete. Cross-validated mean score: {round(np.mean(scores), 2)}"
         )
-        save_cross_validated_scores_to_txt(scores, output_dir, "neural_network_cross_validated_scores")
+        save_cross_validated_scores_to_csv(scores, output_dir, "neural_network_cross_validated_scores")
 
     return best_estimator
 
