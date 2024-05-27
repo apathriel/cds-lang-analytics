@@ -1,20 +1,17 @@
 import math
-import os
 from pathlib import Path
 
 from logger_utils import get_logger
 from data_manipulation_utils import (
-    load_csv,
+    load_csv_as_df,
     get_column_value_counts_by_group_as_percentage,
     convert_column_to_data_type,
 )
 import matplotlib.pyplot as plt
 import pandas as pd
-from tqdm import tqdm
-from transformers import pipeline
 
 
-LOGGER = get_logger(__name__)
+logger = get_logger(__name__)
 
 
 def visualize_relative_emotion_distribution_by_season(
@@ -24,8 +21,8 @@ def visualize_relative_emotion_distribution_by_season(
     plot_colors: list,
     output_dir: Path,
     plot_output_title: str = None,
-    plot_output_format: str = "png"
-):
+    plot_output_format: str = "png",
+) -> None:
     # Calculate the number of rows needed for the grid
     num_of_subplots = len(normalized_counts_by_category.index.levels[0])
     num_rows = math.ceil(num_of_subplots / num_subplots_columns)
@@ -63,9 +60,9 @@ def visualize_relative_emotion_distribution_by_season(
 
     if plot_output_title:
         output_dir.mkdir(parents=True, exist_ok=True)
-        save_path = output_dir / plot_output_title
-        plt.savefig(fname=save_path, format=plot_output_format)
-        print(f"Plot saved to {save_path}")
+        save_path = output_dir / f"{plot_output_title}.{plot_output_format}"
+        plt.savefig(fname=save_path)
+        logger.info(f"Plot saved as {save_path}")
     else:
         plt.show()
 
@@ -78,7 +75,7 @@ def visualize_emotion_flunctuations_across_seasons(
     output_dir: Path,
     plot_output_title: str = None,
     plot_output_format: str = "png",
-):
+) -> None:
     num_of_subplots = len(normalized_counts_across_timeseries.index)
     num_rows = math.ceil(num_of_subplots / num_subplots_columns)
 
@@ -90,7 +87,7 @@ def visualize_emotion_flunctuations_across_seasons(
 
     for ax in axs[num_of_subplots:]:
         fig.delaxes(ax)
-    
+
     # Get all labels from the X axis
 
     fig.suptitle(plot_title.capitalize(), fontsize=16)
@@ -102,12 +99,14 @@ def visualize_emotion_flunctuations_across_seasons(
         normalized_counts_across_timeseries.loc[emotion].plot(
             kind="line", ax=axs[i], color=plot_colors[i % len(plot_colors)]
         )
-        
+
         # Get the X axis labels
         labels = [item.get_text() for item in axs[i].get_xticklabels()]
 
         # Replace 'Season ' with 'S' in each label
-        labels = ['S' + label.split(' ')[1] if ' ' in label else label for label in labels]
+        labels = [
+            "S" + label.split(" ")[1] if " " in label else label for label in labels
+        ]
         # Set the title and labels
         axs[i].set_title(f"{emotion.capitalize()} Percentage by Season")
         axs[i].set_xlabel("Season")
@@ -120,26 +119,20 @@ def visualize_emotion_flunctuations_across_seasons(
     # Handle plot output
     if plot_output_title:
         output_dir.mkdir(parents=True, exist_ok=True)
-        save_path = output_dir / plot_output_title
-        plt.savefig(fname=save_path, format=plot_output_format)
-        print(f"Plot saved as {save_path}")
-    else:  
+        save_path = output_dir / f"{plot_output_title}.{plot_output_format}"
+        plt.savefig(fname=save_path)
+        logger.info(f"Plot saved as {save_path}")
+    else:
         plt.show()
-   
+
 
 def main():
-    input_data_path = Path(
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "in")
-    )
-
-    output_plot_path = Path(
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "out", "plots")
-    )
+    input_data_path = Path(__file__).parent / ".." / "out"
+    output_plot_path = Path(__file__).parent / ".." / "out" / "plots"
 
     input_file_path = input_data_path / "Game_of_Thrones_Script_with_Classification.csv"
-    
 
-    df = load_csv(input_file_path)
+    df = load_csv_as_df(input_file_path)
     df = convert_column_to_data_type(df, "Sentence", str)
 
     emotion_counts_by_season = get_column_value_counts_by_group_as_percentage(
@@ -156,7 +149,7 @@ def main():
         plot_colors=colors_for_plots,
         output_dir=output_plot_path,
         plot_output_title="emotion_counts_by_season",
-        plot_output_format="png"        
+        plot_output_format="png",
     )
 
     # Plot the relative frequency of emotion labels across total lines of season
@@ -167,7 +160,7 @@ def main():
         plot_colors=colors_for_plots,
         output_dir=output_plot_path,
         plot_output_title="emotion_flunctuations_across_seasons",
-        plot_output_format="png"
+        plot_output_format="png",
     )
 
 
