@@ -1,0 +1,7 @@
+Cross-validated scores:
+Fold 1: 0.825
+Fold 2: 0.793
+Fold 3: 0.824
+Fold 4: 0.82
+Fold 5: 0.831
+Mean score: 0.819
