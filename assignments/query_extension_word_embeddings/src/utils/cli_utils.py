@@ -1,9 +1,16 @@
+from argparse import ArgumentParser, Namespace
+from typing import Tuple
 
-
-import argparse
 from utils.utilities import convert_string_to_lower_case
 
-def get_cli_args():
+
+def get_cli_args() -> Tuple[ArgumentParser, Namespace]:
+    """
+    Parses command line arguments and returns the argument parser and parsed arguments.
+
+    Returns:
+        Tuple[ArgumentParser, Namespace]: The argument parser and parsed arguments.
+    """
     parser = instantiate_parser()
     parser.add_argument('-a', '--artist', nargs='+', type=str, help='Artist name', required=True)
     parser.add_argument('-q', '--query', type=str, help='Query word', required=True)
@@ -15,8 +22,14 @@ def get_cli_args():
     args.query = convert_string_to_lower_case(args.query)
     return parser, args
 
-def instantiate_parser():
-    return argparse.ArgumentParser(
+def instantiate_parser() -> ArgumentParser:
+    """
+    Instantiate the argument parser for the corpus_query script.
+
+    Returns:
+        ArgumentParser: The instantiated argument parser.
+    """
+    return ArgumentParser(
         prog="corpus_query",
         description='This script is used to query a dataset of songs by artist. The query will examine a specified concept, this query is extended through word embeddings.',
         epilog='Thanks for using %(prog)s!'
