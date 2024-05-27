@@ -2,9 +2,9 @@
 
 python -m pip install --user virtualenv
 
-python -m virtualenv la04_env
+python -m virtualenv env
 
-source ./la04_env/bin/activate
+source ./env/bin/activate
 
 pip install --upgrade pip
 pip install -r requirements.txt
