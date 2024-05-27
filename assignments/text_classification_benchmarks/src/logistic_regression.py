@@ -105,7 +105,7 @@ def main():
         report_path=report_data_path,
         model_path=model_data_path,
         cross_validate=True,
-        cv_fold=5,
+        cv_fold=10,
     )
 
 
