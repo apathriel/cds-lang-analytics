@@ -11,8 +11,9 @@ import shutil
 from typing import *
 
 import aiofiles.os
-from assignments.emotion_analysis.src.logger_utils import get_logger
+from logger_utils import get_logger
 import kaggle
+from kaggle.api.kaggle_api_extended import KaggleApi
 
 logger = get_logger(__name__)
 
@@ -200,7 +201,7 @@ class KaggleDatasetManager:
         self.dir_manipulation_type = dir_manipulation_type
         self.dir_manager = dir_manager
         self.force_download = force_download
-        self.kaggle_api = kaggle.KaggleApi()
+        self.kaggle_api = KaggleApi()
 
     def construct_dataset_url_slug(self) -> str:
         return "/".join(self.dataset_url.split("//")[1].split("/")[2:4])
@@ -308,7 +309,6 @@ def main(dataset_url, data_path, dir_rename_val, dir_manipulation_type):
 
     creds = KaggleCredentialsManager("kaggle.json")
     creds.load_creds_from_json()
-    creds.instantiate_environment_variables()
 
     manager = DirectoryManipulator(data_path)
     downloader = KaggleDatasetManager(
