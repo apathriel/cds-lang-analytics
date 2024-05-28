@@ -1,36 +1,56 @@
 # cli_decorator.py
 import click
 
+
 def cli_options(func):
     decorators = [
         click.option(
             "--input_csv_path",
             "-i",
             help="Path to the input CSV file relative to this scripts parent folder",
+            default="Game_of_Thrones_Script.csv",
             prompt=True,
             required=True,
         ),
         click.option(
-            "--save_results_to_csv",
-            "-s",
-            help="Save the results to a new CSV file",
-            default=True,
-            type=bool,
+            "--output_csv_path",
+            "-o",
+            help="Path to the output CSV file",
+            default=None,
+            type=str,
         ),
         click.option(
-            "--output_csv_path", "-o", help="Path to the output CSV file", default=None
+            "--output_plot_path",
+            "-op",
+            help="Path to the output plot file. If not provided, plots will not be saved",
+            type=str,
+            default=None,
         ),
         click.option(
-            "--raw_text_column",
-            "-rtc",
-            help="Name of the column containing raw text data",
-            default="Sentence",
+            "--processed_data_path",
+            "-pdp",
+            help="Path to the processed csv file. If not provided, the pipeline will process the input data and save it to a new file.",
+            type=str,
+            default=None,
+        ),
+        click.option(
+            "--filter_out_neutral_tag",
+            "-f",
+            help="If true, disregard neutral emotion tags in visualization",
+            is_flag=True,
+            default=False,
         ),
         click.option(
             "--hf_model",
             "-m",
             help="Name of the Hugging Face model to use for classification",
             default="j-hartmann/emotion-english-distilroberta-base",
+        ),
+        click.option(
+            "--raw_text_column",
+            "-rtc",
+            help="Name of the column containing raw text data",
+            default="Sentence",
         ),
         click.option(
             "--emotion_column_title",
