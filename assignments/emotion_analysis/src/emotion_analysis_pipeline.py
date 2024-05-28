@@ -69,8 +69,9 @@ def main(
     )
     input_data_path = Path(__file__).parent / ".." / "in" / input_csv_path
     output_data_path = (
-        Path(__file__).parent / ".." / "out" / output_csv_path if output_csv_path else None
+        Path(__file__).parent / ".."  / output_csv_path if output_csv_path else None
     )
+    output_data_plot_path = Path(__file__).parent / ".." / output_plot_path if output_plot_path else None
 
     if processed_data_path:
         processed_data_path = (
