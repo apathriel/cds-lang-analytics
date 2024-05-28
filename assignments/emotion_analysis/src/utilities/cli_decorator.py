@@ -41,6 +41,13 @@ def cli_options(func):
             default=False,
         ),
         click.option(
+            "--rescale-y-axis_for_fluctuation_plot",
+            "-ry",
+            help="If true, rescale the y-axis 0-1 for the fluctuation plot",
+            is_flag=True,
+            default=False,
+        ),
+        click.option(
             "--hf_model",
             "-m",
             help="Name of the Hugging Face model to use for classification",

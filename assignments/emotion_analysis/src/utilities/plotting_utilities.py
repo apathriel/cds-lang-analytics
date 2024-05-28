@@ -5,8 +5,8 @@ from typing import List, Tuple
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from logger_utils import get_logger
-from data_manipulation_utils import (
+from .logger_utils import get_logger
+from .data_manipulation_utils import (
     load_csv_as_df,
     get_column_value_counts_by_group_as_percentage,
     convert_column_to_data_type,
@@ -88,6 +88,7 @@ def visualize_emotion_flunctuations_across_seasons(
     output_dir: Path,
     plot_output_title: str = None,
     plot_output_format: str = "png",
+    rescale_y_axis: bool = False,
 ) -> None:
     num_of_subplots = len(normalized_counts_across_timeseries.index)
     fig, axs = create_subplots(num_of_subplots, num_subplots_columns)
@@ -105,6 +106,8 @@ def visualize_emotion_flunctuations_across_seasons(
 
         # Get the X axis labels
         labels = [item.get_text() for item in axs[i].get_xticklabels()]
+
+        axs[i].set_ylim([0, 1]) if rescale_y_axis else None
 
         # Replace 'Season ' with 'S' in each label
         labels = [

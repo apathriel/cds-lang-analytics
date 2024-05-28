@@ -3,7 +3,7 @@ from typing import Any, List
 
 import pandas as pd
 
-from logger_utils import get_logger
+from .logger_utils import get_logger
 
 logger = get_logger(__name__)
 
