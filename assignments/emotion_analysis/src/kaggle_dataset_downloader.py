@@ -8,7 +8,7 @@ from typing import *
 import aiofiles.os
 import click
 
-from logger_utils import get_logger
+from utilities.logger_utils import get_logger
 
 
 logger = get_logger(__name__)

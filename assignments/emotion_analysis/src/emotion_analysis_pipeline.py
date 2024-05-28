@@ -6,16 +6,16 @@ import pandas as pd
 from tqdm import tqdm
 from transformers import pipeline, Pipeline
 
-from cli_decorator import cli_options
-from data_manipulation_utils import (
+from utilities.cli_decorator import cli_options
+from utilities.data_manipulation_utils import (
     export_df_as_csv,
     load_csv_as_df,
     convert_column_to_data_type,
     get_column_value_counts_by_group_as_percentage,
 )
 
-from logger_utils import get_logger
-from visualizing_emotion_analysis import (
+from utilities.logger_utils import get_logger
+from utilities.plotting_utilities import (
     visualize_relative_emotion_distribution_by_season,
     visualize_emotion_flunctuations_across_seasons,
 )
@@ -56,6 +56,7 @@ def main(
     output_plot_path: Optional[str],
     processed_data_path: Optional[str],
     filter_out_neutral_tag: bool,
+    rescale_y_axis_for_fluctuation_plot: bool,
     hf_model: str,
     raw_text_column: str,
     emotion_column_title: str,
@@ -69,9 +70,11 @@ def main(
     )
     input_data_path = Path(__file__).parent / ".." / "in" / input_csv_path
     output_data_path = (
-        Path(__file__).parent / ".."  / output_csv_path if output_csv_path else None
+        Path(__file__).parent / ".." / output_csv_path if output_csv_path else None
     )
-    output_data_plot_path = Path(__file__).parent / ".." / output_plot_path if output_plot_path else None
+    output_data_plot_path = (
+        Path(__file__).parent / ".." / output_plot_path if output_plot_path else None
+    )
 
     if processed_data_path:
         processed_data_path = (
@@ -104,15 +107,19 @@ def main(
         )
         # Save the results to a new CSV file
         if output_data_path:
-            export_df_as_csv(df, output_data_path, f"{input_csv_path}_emotion_classification")
+            export_df_as_csv(
+                df, output_data_path, f"{input_data_path.stem}_emotion_classification"
+            )
 
     # Filter out neutral emotion tags if disregard_neutral_tag is True
-    df = df[df['Emotion'] != 'neutral'] if filter_out_neutral_tag else df
+    df = df[df["Emotion"] != "neutral"] if filter_out_neutral_tag else df
 
     # Visualize the results, show plots if no output path is provided
-    counts_by_season_title = "emotion_counts_by_season" if output_plot_path else None
+    counts_by_season_title = (
+        "emotion_counts_by_season" if output_data_plot_path else None
+    )
     counts_across_seasons_title = (
-        "emotion_flunctuations_across_seasons" if output_plot_path else None
+        "emotion_flunctuations_across_seasons" if output_data_plot_path else None
     )
 
     emotion_counts_by_season = get_column_value_counts_by_group_as_percentage(
@@ -121,14 +128,13 @@ def main(
 
     colors_for_plots = ["blue", "orange", "green", "red", "purple", "brown", "pink"]
 
-
     # Plot the emotion counts by season
     visualize_relative_emotion_distribution_by_season(
         normalized_counts_by_category=emotion_counts_by_season,
         num_subplots_columns=3,
         plot_title="Distribution of emotion labels per season",
         plot_colors=colors_for_plots,
-        output_dir=output_plot_path,
+        output_dir=output_data_plot_path,
         plot_output_title=counts_by_season_title,
         plot_output_format="png",
     )
@@ -139,9 +145,10 @@ def main(
         num_subplots_columns=3,
         plot_title="Relative emotion flunctuations across seasons",
         plot_colors=colors_for_plots,
-        output_dir=output_plot_path,
+        output_dir=output_data_plot_path,
         plot_output_title=counts_across_seasons_title,
         plot_output_format="png",
+        rescale_y_axis=rescale_y_axis_for_fluctuation_plot,
     )
 
 
