@@ -303,7 +303,7 @@ def main(dataset_url, data_path, dir_rename_val, dir_manipulation_type):
     # Get the path of the current script
     script_dir = Path(__file__).parent / ".."
     # Construct the path to the kaggle.json file
-    kaggle_json_path = script_dir / "creds.json"
+    kaggle_json_path = script_dir / "kaggle.json"
 
     creds = KaggleCredentialsManager(file_path=kaggle_json_path)
     creds.load_creds_from_json()
