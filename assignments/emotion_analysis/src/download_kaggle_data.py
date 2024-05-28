@@ -1,9 +1,4 @@
-# Python inquirer api query implementation
-# Handle unzipping the file
-# add docstrings
-
 import asyncio
-import click
 import json
 import os
 from pathlib import Path
@@ -11,10 +6,9 @@ import shutil
 from typing import *
 
 import aiofiles.os
-from logger_utils import get_logger
+import click
 
-from kaggle.api.kaggle_api_extended import KaggleApi
-from kaggle.api import dataset_list_files, dataset_download_files
+from logger_utils import get_logger
 
 
 logger = get_logger(__name__)
@@ -203,8 +197,6 @@ class KaggleDatasetManager:
     def authenticate_kaggle_api(self) -> None:
         logger.info("Authenticating Kaggle API...")
         try:
-            self.kaggle_api.set_config_value("username", self.creds_manager.username)
-            self.kaggle_api.set_config_value("key", self.creds_manager.api_key)
             self.kaggle_api.authenticate()
             logger.info("Kaggle API authentication successful!")
         except Exception as error:
@@ -216,7 +208,7 @@ class KaggleDatasetManager:
         self.authenticate_kaggle_api()
         logger.info(f"Listing files in dataset '{self.dataset_url_slug}'...")
         try:
-            dataset_files = dataset_list_files(self.dataset_url_slug).files
+            dataset_files = kaggle.api.dataset_list_files(self.dataset_url_slug).files
             for file in dataset_files:
                 file_info = f"File: {file.name:<20}"
                 if verbose:
@@ -228,7 +220,7 @@ class KaggleDatasetManager:
     def get_number_of_files_in_kaggle_dataset(self) -> int:
         self.authenticate_kaggle_api()
         try:
-            dataset_files = dataset_list_files(self.dataset_url_slug).files
+            dataset_files = kaggle.api.dataset_list_files(self.dataset_url_slug).files
             return len(dataset_files)
         except Exception as e:
             logger.error(f"An error occurred: {e}")
@@ -236,7 +228,7 @@ class KaggleDatasetManager:
     def get_single_file_kaggle_dataset_title(self) -> Optional[str]:
         self.authenticate_kaggle_api()
         try:
-            dataset_files = dataset_list_files(self.dataset_url_slug).files
+            dataset_files = kaggle.api.dataset_list_files(self.dataset_url_slug).files
             if len(dataset_files) > 1:
                 logger.error(
                     f"Multiple files found in dataset '{self.dataset_url_slug}'."
@@ -253,7 +245,7 @@ class KaggleDatasetManager:
         self.authenticate_kaggle_api()
         try:
             logger.info(f"Attempting to download dataset '{self.dataset_url_slug}'...")
-            dataset_download_files(
+            kaggle.api.dataset_download_files(
                 self.dataset_url_slug,
                 path=self.data_path,
                 unzip=True,
@@ -271,6 +263,12 @@ class KaggleDatasetManager:
                 )
         except Exception as e:
             logger.error(f"An error occurred: {e}")
+
+
+def import_kaggle_api():
+    global KaggleApi, kaggle
+    from kaggle.api.kaggle_api_extended import KaggleApi
+    import kaggle
 
 
 @click.command()
@@ -307,9 +305,11 @@ def main(dataset_url, data_path, dir_rename_val, dir_manipulation_type):
     # Construct the path to the kaggle.json file
     kaggle_json_path = script_dir / "creds.json"
 
-    print(kaggle_json_path)
     creds = KaggleCredentialsManager(file_path=kaggle_json_path)
     creds.load_creds_from_json()
+    creds.instantiate_environment_variables()
+
+    import_kaggle_api()
 
     manager = DirectoryManipulator(data_path)
     downloader = KaggleDatasetManager(
