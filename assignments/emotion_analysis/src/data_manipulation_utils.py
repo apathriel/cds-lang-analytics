@@ -50,6 +50,10 @@ def export_df_as_csv(df: pd.DataFrame, directory: Path, filename: str) -> None:
     except OSError as e:
         logger.error(f"OS error occurred when trying to create directory: {e}")
         return
+    
+    # Check if filename ends with .csv, if not, append it
+    if not filename.endswith('.csv'):
+        filename += '.csv'
 
     # Create the full file path
     file_path = directory / filename
