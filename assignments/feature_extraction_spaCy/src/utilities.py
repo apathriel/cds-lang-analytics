@@ -11,11 +11,12 @@ def get_logger(name: str) -> logging.Logger:
     Returns:
         logging.Logger: The configured logger object.
     """
+    name = name.upper()
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
     handler.setFormatter(
-        logging.Formatter("[%(levelname)s] - %(asctime)s - %(message)s")
+        logging.Formatter("[%(levelname)s] - [%(name)s] - %(asctime)s - %(message)s")
     )
     logger.addHandler(handler)
     return logger
