@@ -32,7 +32,7 @@ def emotion_analysis_pipeline(
 ) -> pd.DataFrame:
 
     # Initialize a progress bar with tqdm
-    tqdm.pandas()
+    tqdm.pandas(desc="Classifying text")
 
     # Run the classifier on each element in the defined column in the DataFrame
     try:
@@ -69,7 +69,7 @@ def main(
     )
     input_data_path = Path(__file__).parent / ".." / "in" / input_csv_path
     output_data_path = (
-        Path(__file__).parent / ".." / output_csv_path if output_csv_path else None
+        Path(__file__).parent / ".." / "out" / output_csv_path if output_csv_path else None
     )
 
     if processed_data_path:
@@ -103,7 +103,7 @@ def main(
         )
         # Save the results to a new CSV file
         if output_data_path:
-            export_df_as_csv(df, output_data_path)
+            export_df_as_csv(df, output_data_path, f"{input_csv_path}_emotion_classification")
 
     # Filter out neutral emotion tags if disregard_neutral_tag is True
     df = df[df['Emotion'] != 'neutral'] if filter_out_neutral_tag else df
