@@ -8,8 +8,17 @@ from spacy.tokens import Doc
 from tqdm import tqdm
 
 from cli_utilities import parse_cli_arguments
+from emission_tracker_class import SingletonEmissionsTracker
 from data_processing_utilities import export_df_as_csv, load_text_file
 from utilities import get_logger
+
+# Initialize the emissions tracker
+emissions_tracker = SingletonEmissionsTracker(
+    project_name=Path(__file__).stem,
+    experiment_id="linguistic_analysis",
+    output_dir=Path(__file__).parent / ".." / "out",
+)
+
 
 logger = get_logger(__name__)
 
@@ -69,7 +78,9 @@ def extract_linguistic_information_pipeline(
 
     for sub_directory in tqdm(input_path.iterdir(), desc="Processing subfolders"):
         if sub_directory.is_dir():
-            dataframes_to_concatenate = []  # create list for storing dataframes, append each, then concatenate all at once
+            dataframes_to_concatenate = (
+                []
+            )  # create list for storing dataframes, append each, then concatenate all at once
             for file in tqdm(
                 sub_directory.iterdir(),
                 desc=f"Processing files in directory {sub_directory.name}",
@@ -100,13 +111,14 @@ def extract_linguistic_information_pipeline(
                 dataframes_to_concatenate, ignore_index=True
             )  # concatenate all the DataFrames at once
             df = df.sort_values("Filename")  # sort the DataFrame by filename
-            export_df_as_csv(df, output_path, f"{sub_directory.name}_table.csv")  # export the DataFrame to a CSV file
+            export_df_as_csv(
+                df, output_path, f"{sub_directory.name}_table.csv"
+            )  # export the DataFrame to a CSV file
         else:
             logger.error(f"File {sub_directory.name} is not a directory.")
             continue
 
     return "Dataframes concatenated and exported successfully!"
-    
 
 
 def calculate_named_entity_occurrences(document: Doc) -> Dict[str, int]:
@@ -185,29 +197,35 @@ def calculate_token_type_occurrences(
     }
 
 
+# @SingletonEmissionsTracker.track_emissions_decorator(task_id="main")
 def main():
     # Get the command-line arguments
     cli_args = parse_cli_arguments()
 
     # Try to load the spaCy model, download it if it's not found
+    SingletonEmissionsTracker.start_task("loading_spacy_model")
     try:
         nlp = spacy.load(cli_args.model)
     except OSError:
         logger.error(f"{cli_args.model} not found. Attempting to download model...")
         spacy.cli.download(cli_args.model)
         nlp = spacy.load(cli_args.model)
+    SingletonEmissionsTracker.stop_current_task()
 
     # Initialize the input and output folder paths. File paths are expected to be relative to the src folder. Within project root.
     input_folder_path = Path(__file__).parent / ".." / cli_args.input_path
     output_folder_path = Path(__file__).parent / ".." / cli_args.output_path
 
+    SingletonEmissionsTracker.start_task("extract_linguistic_information_pipeline")
     # Extract linguistic information from the text files
     extract_linguistic_information_pipeline(
-        input_path=input_folder_path, 
-        output_path=output_folder_path,
-        model=nlp
+        input_path=input_folder_path, output_path=output_folder_path, model=nlp
     )
+    SingletonEmissionsTracker.stop_current_task()
 
 
 if __name__ == "__main__":
     main()
+    emission_results = SingletonEmissionsTracker.get_task_results()
+    df = SingletonEmissionsTracker.create_dataframe_from_task_results()
+    export_df_as_csv(df, Path(__file__).parent / ".." / "out", "emission_results.csv")
