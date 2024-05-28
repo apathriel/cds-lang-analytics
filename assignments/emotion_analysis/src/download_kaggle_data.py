@@ -12,8 +12,10 @@ from typing import *
 
 import aiofiles.os
 from logger_utils import get_logger
-import kaggle
+
 from kaggle.api.kaggle_api_extended import KaggleApi
+from kaggle.api import dataset_list_files, dataset_download_files
+
 
 logger = get_logger(__name__)
 
@@ -100,16 +102,6 @@ class DirectoryManipulator:
         except Exception as e:
             logger.info(f"An unexpected error occurred: {e}")
 
-        """     async def rename_and_delete_duplicate(self):
-        logger.info(f"Manipulating directory structure according to pre-defined instructions...")
-        new_name = self.data_path / self.dir_target_name_val
-        download_name_path = Path(self.download_name) / self.download_name
-        try:
-            await self.delete_directory(download_name_path)
-            await self.rename_dataset_folder(self.dir_target_name_val)
-        except Exception as e:
-            logger.info(f"An error occurred: {e}") """
-
     @property
     def dataset_dir_title(self) -> str:
         return self._dataset_dir_title
@@ -122,9 +114,9 @@ class DirectoryManipulator:
 class KaggleCredentialsManager:
     def __init__(
         self,
+        file_path: str,
         username: Optional[str] = None,
         api_key: Optional[str] = None,
-        file_path: str = "kaggle.json",
     ) -> None:
         self._file_path: str = file_path
         self._username: Optional[str] = username
@@ -184,6 +176,7 @@ class KaggleDatasetManager:
         dataset_url: str,
         data_path: str,
         dir_manager: DirectoryManipulator,
+        creds_manager: KaggleCredentialsManager,
         dataset_dir_title: str = "",
         dir_rename_val: str = "in",
         dir_manipulation_type: str = "rename",
@@ -202,6 +195,7 @@ class KaggleDatasetManager:
         self.dir_manager = dir_manager
         self.force_download = force_download
         self.kaggle_api = KaggleApi()
+        self.creds_manager = creds_manager
 
     def construct_dataset_url_slug(self) -> str:
         return "/".join(self.dataset_url.split("//")[1].split("/")[2:4])
@@ -209,6 +203,8 @@ class KaggleDatasetManager:
     def authenticate_kaggle_api(self) -> None:
         logger.info("Authenticating Kaggle API...")
         try:
+            self.kaggle_api.set_config_value("username", self.creds_manager.username)
+            self.kaggle_api.set_config_value("key", self.creds_manager.api_key)
             self.kaggle_api.authenticate()
             logger.info("Kaggle API authentication successful!")
         except Exception as error:
@@ -220,7 +216,7 @@ class KaggleDatasetManager:
         self.authenticate_kaggle_api()
         logger.info(f"Listing files in dataset '{self.dataset_url_slug}'...")
         try:
-            dataset_files = kaggle.api.dataset_list_files(self.dataset_url_slug).files
+            dataset_files = dataset_list_files(self.dataset_url_slug).files
             for file in dataset_files:
                 file_info = f"File: {file.name:<20}"
                 if verbose:
@@ -232,7 +228,7 @@ class KaggleDatasetManager:
     def get_number_of_files_in_kaggle_dataset(self) -> int:
         self.authenticate_kaggle_api()
         try:
-            dataset_files = kaggle.api.dataset_list_files(self.dataset_url_slug).files
+            dataset_files = dataset_list_files(self.dataset_url_slug).files
             return len(dataset_files)
         except Exception as e:
             logger.error(f"An error occurred: {e}")
@@ -240,7 +236,7 @@ class KaggleDatasetManager:
     def get_single_file_kaggle_dataset_title(self) -> Optional[str]:
         self.authenticate_kaggle_api()
         try:
-            dataset_files = kaggle.api.dataset_list_files(self.dataset_url_slug).files
+            dataset_files = dataset_list_files(self.dataset_url_slug).files
             if len(dataset_files) > 1:
                 logger.error(
                     f"Multiple files found in dataset '{self.dataset_url_slug}'."
@@ -257,7 +253,7 @@ class KaggleDatasetManager:
         self.authenticate_kaggle_api()
         try:
             logger.info(f"Attempting to download dataset '{self.dataset_url_slug}'...")
-            kaggle.api.dataset_download_files(
+            dataset_download_files(
                 self.dataset_url_slug,
                 path=self.data_path,
                 unzip=True,
@@ -306,8 +302,13 @@ class KaggleDatasetManager:
     help="Type of directory manipulation to perform. Options: 'rename', 'parent_move' or 'None'. Default: 'None'.",
 )
 def main(dataset_url, data_path, dir_rename_val, dir_manipulation_type):
+    # Get the path of the current script
+    script_dir = Path(__file__).parent / ".."
+    # Construct the path to the kaggle.json file
+    kaggle_json_path = script_dir / "creds.json"
 
-    creds = KaggleCredentialsManager("kaggle.json")
+    print(kaggle_json_path)
+    creds = KaggleCredentialsManager(file_path=kaggle_json_path)
     creds.load_creds_from_json()
 
     manager = DirectoryManipulator(data_path)
@@ -317,6 +318,7 @@ def main(dataset_url, data_path, dir_rename_val, dir_manipulation_type):
         dir_manipulation_type=dir_manipulation_type,
         dir_manager=manager,
         dir_rename_val=dir_rename_val,
+        creds_manager=creds,
     )
 
     downloader.list_files_in_kaggle_dataset()
