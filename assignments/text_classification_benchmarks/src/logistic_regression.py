@@ -141,6 +141,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+    SingletonEmissionsTracker.log_task_results()
     df = SingletonEmissionsTracker.create_dataframe_from_task_results()
     export_df_as_csv(
         df, Path(__file__).parent / ".." / "out", "logistic_emission_results_process.csv"

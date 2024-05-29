@@ -18,7 +18,11 @@ class SingletonEmissionsTracker:
     most_recently_started_task = None
 
     def __new__(
-        cls, experiment_id: str, output_dir: Path, log_level: str = "info", project_name: str = __file__
+        cls,
+        experiment_id: str,
+        output_dir: Path,
+        log_level: str = "info",
+        project_name: str = __file__,
     ):
         if cls._instance is None:
             cls._instance = EmissionsTracker(
@@ -27,10 +31,21 @@ class SingletonEmissionsTracker:
                 output_dir=output_dir,
                 log_level=log_level,
                 output_file="emissions.csv",
-                gpu_ids = [0],
-                tracking_mode="process"
+                gpu_ids=[0],
+                tracking_mode="process",
             )
         return cls._instance
+
+    @staticmethod
+    def log_task_results():
+        emissions_dict = {}
+        for task_id, result in SingletonEmissionsTracker.task_results.items():
+            if result is not None:
+                emissions = result.emissions
+            else:
+                emissions = None
+            emissions_dict[task_id] = emissions
+        logging.info(f"Emissions: {emissions_dict}")
 
     @staticmethod
     def create_dataframe_from_task_results():
@@ -41,20 +56,22 @@ class SingletonEmissionsTracker:
                 result_dict["Task"] = task
                 data.append(result_dict)
             else:
-                data.append({
-                    "Task": task,
-                    "Duration": None,
-                    "Energy Consumed": None,
-                    "Emissions": None,
-                    "Country Name": None,
-                    "Country ISO Code": None,
-                    "Region": None,
-                    "Timestamp": None,
-                })
+                data.append(
+                    {
+                        "Task": task,
+                        "Duration": None,
+                        "Energy Consumed": None,
+                        "Emissions": None,
+                        "Country Name": None,
+                        "Country ISO Code": None,
+                        "Region": None,
+                        "Timestamp": None,
+                    }
+                )
         df = pd.DataFrame(data)
 
         # Reorder columns to make 'Task' the first column
-        df = df.reindex(columns=['Task'] + [col for col in df.columns if col != 'Task'])
+        df = df.reindex(columns=["Task"] + [col for col in df.columns if col != "Task"])
         return df
 
     @staticmethod
@@ -100,12 +117,18 @@ class SingletonEmissionsTracker:
             try:
                 tracker.start_task(task_id)
             except Exception as e:
-                logging.error(f"An error occurred while starting the task {task_id} on attempt {attempt + 1}: {e}")
+                logging.error(
+                    f"An error occurred while starting the task {task_id} on attempt {attempt + 1}: {e}"
+                )
                 if attempt + 1 == max_attempts:
-                    logging.error(f"Failed to start task {task_id} after {max_attempts} attempts")
+                    logging.error(
+                        f"Failed to start task {task_id} after {max_attempts} attempts"
+                    )
                     break
             else:
-                SingletonEmissionsTracker.update_current_task(task_id)  # Update the current task only if start_task is successful
+                SingletonEmissionsTracker.update_current_task(
+                    task_id
+                )  # Update the current task only if start_task is successful
                 logging.info(f"Started task {task_id}")  # Log the task ID
                 break
 
