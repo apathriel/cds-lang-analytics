@@ -7,6 +7,8 @@ from sklearn.model_selection import cross_val_score, GridSearchCV
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import classification_report
+from sklearn.neural_network import MLPClassifier
+from sklearn.model_selection import GridSearchCV, cross_val_score
 
 from data_processing_utilities import (
     load_labeled_data_as_df,
@@ -18,17 +20,6 @@ from data_processing_utilities import (
 from utilities import get_logger
 
 logger = get_logger(__name__)
-
-
-from typing import Dict, Any, Union, Optional
-import pandas as pd
-import numpy as np
-from sklearn.neural_network import MLPClassifier
-from sklearn.model_selection import GridSearchCV, cross_val_score
-from pathlib import Path
-import logging
-
-logger = logging.getLogger(__name__)
 
 def train_neural_network_classifier_model(
     output_dir: Path,
