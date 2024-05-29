@@ -12,6 +12,40 @@ from utilities import get_logger
 
 logger = get_logger(__name__)
 
+def export_df_as_csv(df: pd.DataFrame, directory: Path, filename: str) -> None:
+    """
+    Export a pandas DataFrame as a CSV file.
+
+    Paramters:
+        df (pd.DataFrame): The DataFrame to be exported.
+        directory (Path): The directory where the CSV file will be saved.
+        filename (str): The name of the CSV file.
+
+    Raises:
+        PermissionError: If the function does not have permission to create the directory or write the file.
+        OSError: If an OS error occurs when trying to create the directory.
+        Exception: If an unexpected error occurs when trying to write to the file.
+    """
+    try:
+        # Create the directory if it doesn't exist
+        directory.mkdir(parents=True, exist_ok=True)
+    except PermissionError:
+        logger.error(f"Permission denied when trying to create directory: {directory}")
+        return
+    except OSError as e:
+        logger.error(f"OS error occurred when trying to create directory: {e}")
+        return
+
+    # Create the full file path
+    file_path = directory / filename
+
+    try:
+        df.to_csv(file_path, index=False)
+    except PermissionError:
+        logger.error(f"Permission denied when trying to write to file: {file_path}")
+    except Exception as e:
+        logger.error(f"Unexpected error occurred when trying to write to file: {e}")
+
 
 def load_labeled_data_as_df(path_to_data: Path) -> pd.DataFrame:
     """

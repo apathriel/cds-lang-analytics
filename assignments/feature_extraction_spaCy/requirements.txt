@@ -1,4 +1,5 @@
 chardet==5.2.0
+codecarbon==2.4.2
 pandas==2.2.2
 spacy==3.7.4
 tqdm==4.66.2

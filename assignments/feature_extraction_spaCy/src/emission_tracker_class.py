@@ -34,8 +34,8 @@ class SingletonEmissionsTracker:
         data = []
         for task, result in SingletonEmissionsTracker.task_results.items():
             if result is not None:
-                result_dict["Task"] = task
                 result_dict = asdict(result)
+                result_dict["Task"] = task
                 data.append(result_dict)
             else:
                 data.append({
@@ -49,6 +49,9 @@ class SingletonEmissionsTracker:
                     "Timestamp": None,
                 })
         df = pd.DataFrame(data)
+        
+        # Reorder columns to make 'Task' the first column
+        df = df.reindex(columns=['Task'] + [col for col in df.columns if col != 'Task'])
         return df
 
     @staticmethod
