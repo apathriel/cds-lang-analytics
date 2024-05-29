@@ -1,13 +1,15 @@
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import Any
+
 
 import pandas as pd
 
 from utils.cli_utils import get_cli_args
 from utils.data_processing_utils import *
+from utils.emission_tracker_class import SingletonEmissionsTracker
 from utils.model_utils import load_gensim_model, get_word_embeddings
 from utils.logging_utils import get_logger
-from typing import Any
 from utils.utilities import (
     calculate_percentage_2_integers,
     extract_nth_element_from_list_of_tuples,
@@ -15,6 +17,12 @@ from utils.utilities import (
 
 logger = get_logger(__name__)
 
+# Initialize the emissions tracker
+emissions_tracker = SingletonEmissionsTracker(
+    project_name=Path(__file__).stem,
+    experiment_id="query_expansion_word_embeddings",
+    output_dir=Path(__file__).parent / ".." / "out",
+)
 
 def check_if_artist_in_dataset(
     df: pd.DataFrame, artist: str, column_filter_val: str = "artist"
@@ -115,29 +123,44 @@ def validate_artist_input(
 
 
 def main():
+    SingletonEmissionsTracker.start_task("get_cli_args")
     parser, cli_args = get_cli_args()
+    SingletonEmissionsTracker.stop_current_task()
 
+    SingletonEmissionsTracker.start_task("load_model_name_and_paths")
     gensim_model_name = cli_args.model if cli_args.model else "glove-wiki-gigaword-50"
     input_dataset_path = (
         Path(__file__).parent / ".." / "in" / "spotify_million_dataset.csv"
     )
     output_data_path = Path(__file__).parent / ".." / "out"
+    SingletonEmissionsTracker.stop_current_task()
 
+    SingletonEmissionsTracker.start_task("load_gensim_model")
     model = load_gensim_model(gensim_model_name)
+    SingletonEmissionsTracker.stop_current_task()
 
+    SingletonEmissionsTracker.start_task("get_word_embeddings")
     word_embeddings = extract_nth_element_from_list_of_tuples(
         get_word_embeddings(model, parser, cli_args.query), n=0
     )
+    SingletonEmissionsTracker.stop_current_task()
 
+    SingletonEmissionsTracker.start_task("load_spotify_songs_dataset")
     df = load_csv_to_df(input_dataset_path)
+    SingletonEmissionsTracker.stop_current_task()
 
     for artist in cli_args.artist:
+        SingletonEmissionsTracker.start_task("validate_artist_input")
         df_by_artist = validate_artist_input(df, parser, artist)
+        SingletonEmissionsTracker.stop_current_task()
 
+        SingletonEmissionsTracker.start_task("get_num_songs_containing_concept_from_artist")
         songs_containing_concept = filter_df_by_term_occurance(
             df_by_artist, "text", word_embeddings
         )
+        SingletonEmissionsTracker.stop_current_task()
 
+        SingletonEmissionsTracker.start_task("output_percentage_concept_from_query_word_embeddings")
         print_query_results(
             calculate_percentage_2_integers(
                 get_num_rows(songs_containing_concept), get_num_rows(df_by_artist)
@@ -148,7 +171,13 @@ def main():
             "query_results.csv",
             cli_args.save,
         )
+        SingletonEmissionsTracker.stop_current_task()
 
 
 if __name__ == "__main__":
     main()
+    SingletonEmissionsTracker.log_task_results()
+    df = SingletonEmissionsTracker.create_dataframe_from_task_results()
+    export_df_as_csv(
+        df, Path(__file__).parent / ".." / "out", "logistic_emission_results_process.csv"
+    )
