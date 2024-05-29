@@ -58,8 +58,10 @@ def export_df_as_csv(df: pd.DataFrame, directory: Path, filename: str) -> None:
     # Create the full file path
     file_path = directory / filename
 
+    logger.info(f"Trying to export DataFrame to CSV: {file_path}")
     try:
         df.to_csv(file_path, index=False)
+        logger.info(f"Successfully exported DataFrame to CSV: {file_path}")
     except PermissionError:
         logger.error(f"Permission denied when trying to write to file: {file_path}")
     except Exception as e:

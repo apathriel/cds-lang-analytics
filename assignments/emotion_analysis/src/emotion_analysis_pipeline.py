@@ -7,6 +7,7 @@ from tqdm import tqdm
 from transformers import pipeline, Pipeline
 
 from utilities.cli_decorator import cli_options
+from utilities.emission_tracker_class import SingletonEmissionsTracker
 from utilities.data_manipulation_utils import (
     export_df_as_csv,
     load_csv_as_df,
@@ -19,6 +20,14 @@ from utilities.plotting_utilities import (
     visualize_relative_emotion_distribution_by_season,
     visualize_emotion_flunctuations_across_seasons,
 )
+
+# Initialize the emissions tracker
+emissions_tracker = SingletonEmissionsTracker(
+    project_name=Path(__file__).stem,
+    experiment_id="got_emotion_analysis",
+    output_dir=Path(__file__).parent / ".." / "out",
+)
+
 
 logger = get_logger(__name__)
 
@@ -62,6 +71,7 @@ def main(
     emotion_column_title: str,
     score_column_title: str,
 ) -> None:
+    SingletonEmissionsTracker.start_task("initialize_paths")
     # Initialize CSV paths for input and output
     input_csv_path = (
         f"{input_csv_path}.csv"
@@ -75,8 +85,10 @@ def main(
     output_data_plot_path = (
         Path(__file__).parent / ".." / output_plot_path if output_plot_path else None
     )
+    SingletonEmissionsTracker.stop_current_task()
 
     if processed_data_path:
+        SingletonEmissionsTracker.start_task("load_processed_data")
         processed_data_path = (
             f"{processed_data_path}.csv"
             if not processed_data_path.endswith(".csv")
@@ -84,19 +96,29 @@ def main(
         )
         processed_data_path = Path(__file__).parent / ".." / "out" / processed_data_path
         df = load_csv_as_df(Path(processed_data_path))
+        SingletonEmissionsTracker.stop_current_task()
     else:
         # Load the Hugging Face model. Initialize the text classifier pipeline.
+        SingletonEmissionsTracker.start_task("load_hf_model")
         text_classifier = pipeline(
             task="text-classification",
             model=hf_model,
             top_k=1,
             framework="tf",
         )
+        SingletonEmissionsTracker.stop_current_task()
 
+        SingletonEmissionsTracker.start_task("load_csv_data")
         # Load CSV file
         df = load_csv_as_df(input_data_path)
+        SingletonEmissionsTracker.stop_current_task()
+
+        SingletonEmissionsTracker.start_task("convert_text_column_to_str")
         # Convert the column to the appropriate data type
         df = convert_column_to_data_type(df, "Sentence", str)
+        SingletonEmissionsTracker.stop_current_task()
+
+        SingletonEmissionsTracker.start_task("run_emotion_analysis_pipeline")
         # Run the emotion analysis pipeline
         df = emotion_analysis_pipeline(
             df=df,
@@ -105,12 +127,16 @@ def main(
             emotion_column_title=emotion_column_title,
             score_column_title=score_column_title,
         )
+        SingletonEmissionsTracker.stop_current_task()
         # Save the results to a new CSV file
         if output_data_path:
+            SingletonEmissionsTracker.start_task("save_results_to_csv")
             export_df_as_csv(
                 df, output_data_path, f"{input_data_path.stem}_emotion_classification"
             )
+            SingletonEmissionsTracker.stop_current_task()
 
+    SingletonEmissionsTracker.start_task("initialize_visualization_values")
     # Filter out neutral emotion tags if disregard_neutral_tag is True
     df = df[df["Emotion"] != "neutral"] if filter_out_neutral_tag else df
 
@@ -127,7 +153,9 @@ def main(
     )
 
     colors_for_plots = ["blue", "orange", "green", "red", "purple", "brown", "pink"]
+    SingletonEmissionsTracker.stop_current_task()
 
+    SingletonEmissionsTracker.start_task("visualize_emotion_distribution_by_season")
     # Plot the emotion counts by season
     visualize_relative_emotion_distribution_by_season(
         normalized_counts_by_category=emotion_counts_by_season,
@@ -138,7 +166,11 @@ def main(
         plot_output_title=counts_by_season_title,
         plot_output_format="png",
     )
+    SingletonEmissionsTracker.stop_current_task()
 
+    SingletonEmissionsTracker.start_task(
+        "visualize_emotion_fluctuations_across_seasons"
+    )
     # Plot the relative frequency of emotion labels across total lines of season
     visualize_emotion_flunctuations_across_seasons(
         normalized_counts_across_timeseries=emotion_counts_by_season.unstack(level=0),
@@ -149,6 +181,15 @@ def main(
         plot_output_title=counts_across_seasons_title,
         plot_output_format="png",
         rescale_y_axis=rescale_y_axis_for_fluctuation_plot,
+    )
+    SingletonEmissionsTracker.stop_current_task()
+
+    SingletonEmissionsTracker.log_task_results()
+    df = SingletonEmissionsTracker.create_dataframe_from_task_results()
+    export_df_as_csv(
+        df,
+        Path(__file__).parent / ".." / "out",
+        "emotion_analysis_emissions.csv",
     )
 
 
