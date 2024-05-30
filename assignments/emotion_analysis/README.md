@@ -137,7 +137,7 @@ However, some tendencies can be observed from the visualizations. In accordance 
 In retrospect, it might've been optimal to visualize all emotions within the same plot, this might've provided a more suitable analytical aid, adding some visual clarity for easier comparison between emotions in the same representational vector space.
 
 ### 🔮 Conclusion 
-By default, the classifier pipeline provides certainty scores for each emotion, which are also written to the csv file. These are not taken into account when visualizing the results. This reflects a greater are of concern with the reliability of the analysis, namely the noticable lack of certainty regarding the results.
+By default, the classifier pipeline provides certainty scores for each emotion, which are also written to the csv file. These are not taken into account when visualizing the results. This reflects a greater are of concern with the reliability of the analysis, namely the noticable lack of certainty regarding the results. The model card on HF specifies an evaluation accuracy of 66%, which needs to be considered when appreciating the analysis. Additionally, classifying emotions in non-trivial, and the fact that the model's "understanding" of emotions is based on the framework of Ekman's 6 emotions needs to be considered as well.
 
 Yet, the methodology presents a quantitative approach to analysing cultural data. A large corpus was provided, and novel insights were actualized. The specific methodology of emotion analysis presents an interesting approach for making sense of how emotions intersect with culture, and perhaps about emotions in general.
 ## 📖 References
