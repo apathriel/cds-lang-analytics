@@ -8,7 +8,37 @@ from logger_utils import get_logger
 
 logger = get_logger(__name__)
 
+def sum_df_column(df: pd.DataFrame, column: str) -> Union[int, float]:
+    """
+    Sum a given column from a pandas DataFrame.
+
+    Parameters:
+        df (pd.DataFrame): The DataFrame.
+        column (str): The column to be summed.
+
+    Returns:
+        The sum of the column.
+
+    Raises:
+        KeyError: If the column does not exist in the DataFrame.
+    """
+    try:
+        return df[column].sum()
+    except KeyError:
+        logger.error(f"Column {column} does not exist in the DataFrame.")
+        raise
+
 def load_csv_as_df(file_path: Path, logging_enabled: bool = False) -> pd.DataFrame:
+    """
+    Load a CSV file as a pandas DataFrame.
+
+    Parameters:
+        file_path (Path): The path to the CSV file.
+        logging_enabled (bool, optional): Whether to enable logging. Defaults to False.
+
+    Returns:
+        pd.DataFrame: The loaded CSV data as a pandas DataFrame.
+    """
     if logging_enabled:
         logger.info(f"Attempting to load csv from {file_path}...")
     try:
@@ -134,6 +164,8 @@ def main():
     combined_emissions = combine_similar_dataframes(emission_dataframes)
     # Export the combined df as a csv file
     export_df_as_csv(combined_emissions, input_data_directory, "combined_emissions")
-
+    # Sum the 'Emissions' column
+    emissions_sum = sum_df_column(combined_emissions, "emissions")
+    logger.info(f"Total emissions: {emissions_sum}")
 if __name__ == "__main__":
     main()
