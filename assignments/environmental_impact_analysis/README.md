@@ -33,11 +33,12 @@ source env/bin/activate
 python src/generate_visualizations.py
 ```
 
-## 🚀 Usage 
+## 🚀 Usage
+Once the virtual environment is set up and dependencies are installed, run the `data_processing.py` script to generate a CSV file containing the emission tracking results for each project. Run the `generate_visualizations.py` to generate visualizations based on the emission data.
 
 ### 📋 Data processing
 
-### Codecarbon 
+### ♻️ Codecarbon 
 
 ### 📉 Visualizations
 
@@ -50,7 +51,7 @@ note on co2 eq?
 
 ### 🖥️ Hardware
 All the emission benchmarks were generated from running the projects on my laptop, a Clevo NP50DB model. Please see an overview of the detected parameters from codecarbon below:
-**NB**: None of the scripts included functionality for running on the system GPU, beyond any default settings from the modules. 
+**NB**: None of the scripts included functionality for running on the system GPU, beyond any default settings from the modules. `gpu_ids` was set to `None`, to prevent codecarbon from calculating GPU power as well. `tracking_mode` was set to `process`, in an attempt to isolate the CO$_2$eq emissions from the projects. 
 | CPU | Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz |
 |-----|-------------------------------------------|
 | RAM | 7.790576934814453 GB                      |
@@ -62,4 +63,4 @@ All the emission benchmarks were generated from running the projects on my lapto
 
 ### 🗂️ Project Emissions
 
-
+## 📖 References
