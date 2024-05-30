@@ -3,6 +3,7 @@ assignments/emotion_analysis/kaggle.json
 **/input/*
 **/in/*
 !**/in/.gitkeep
+!**/assignments/environmental_impact_analysis/in/*
 
 __pycache__/
 *.pyc
