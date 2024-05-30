@@ -8,21 +8,11 @@ from spacy.tokens import Doc
 from tqdm import tqdm
 
 from cli_utilities import parse_cli_arguments
-from emission_tracker_class import SingletonEmissionsTracker
 from data_processing_utilities import export_df_as_csv, load_text_file
 from utilities import get_logger
 
-# Initialize the emissions tracker
-emissions_tracker = SingletonEmissionsTracker(
-    project_name=Path(__file__).stem,
-    experiment_id="linguistic_analysis",
-    output_dir=Path(__file__).parent / ".." / "out",
-    log_level="critical",
-)
-
 
 logger = get_logger(__name__)
-logger.setLevel("CRITICAL")
 
 
 def calculate_relative_frequency(
@@ -87,20 +77,13 @@ def extract_linguistic_information_pipeline(
                 sub_directory.iterdir(),
                 desc=f"Processing files in directory {sub_directory.name}",
             ):
-                SingletonEmissionsTracker.start_task("load_text_file")
                 text = load_text_file(file)
-                SingletonEmissionsTracker.stop_current_task()
-                SingletonEmissionsTracker.start_task("process_text_with_model")
                 doc = model(text)
-                SingletonEmissionsTracker.stop_current_task()
 
-                SingletonEmissionsTracker.start_task("extract_linguistic_information")
                 values_dict = calculate_token_type_occurrences(
                     doc, remove_punctuation
                 ) | calculate_named_entity_occurrences(doc)
-                SingletonEmissionsTracker.stop_current_task()
 
-                SingletonEmissionsTracker.start_task("create_row_for_text_file")
                 create_df_row = pd.DataFrame(
                     {
                         "Filename": [file.name],
@@ -117,20 +100,15 @@ def extract_linguistic_information_pipeline(
                 dataframes_to_concatenate.append(
                     create_df_row
                 )  # append the DataFrame to a list
-                SingletonEmissionsTracker.stop_current_task()
 
-            SingletonEmissionsTracker.start_task("concatenate_dataframes")
             df = pd.concat(
                 dataframes_to_concatenate, ignore_index=True
             )  # concatenate all the DataFrames at once
             df = df.sort_values("Filename")  # sort the DataFrame by filename
-            SingletonEmissionsTracker.stop_current_task()
 
-            SingletonEmissionsTracker.start_task("export_df_to_csv")
             export_df_as_csv(
                 df, output_path, f"{sub_directory.name}_table.csv"
             )  # export the DataFrame to a CSV file
-            SingletonEmissionsTracker.stop_current_task()
         else:
             logger.error(f"File {sub_directory.name} is not a directory.")
             continue
@@ -214,28 +192,21 @@ def calculate_token_type_occurrences(
     }
 
 
-# @SingletonEmissionsTracker.track_emissions_decorator(task_id="main")
 def main():
-    SingletonEmissionsTracker.start_task("get_cli_args")
     # Get the command-line arguments
     cli_args = parse_cli_arguments()
-    SingletonEmissionsTracker.stop_current_task()
 
     # Try to load the spaCy model, download it if it's not found
-    SingletonEmissionsTracker.start_task("loading_spacy_model")
     try:
         nlp = spacy.load(cli_args.model)
     except OSError:
         logger.error(f"{cli_args.model} not found. Attempting to download model...")
         spacy.cli.download(cli_args.model)
         nlp = spacy.load(cli_args.model)
-    SingletonEmissionsTracker.stop_current_task()
 
-    SingletonEmissionsTracker.start_task("initialize_paths")
     # Initialize the input and output folder paths. File paths are expected to be relative to the src folder. Within project root.
     input_folder_path = Path(__file__).parent / ".." / cli_args.input_path
     output_folder_path = Path(__file__).parent / ".." / cli_args.output_path
-    SingletonEmissionsTracker.stop_current_task()
 
     # Extract linguistic information from the text files
     extract_linguistic_information_pipeline(
@@ -245,6 +216,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    emission_results = SingletonEmissionsTracker.get_task_results()
-    df = SingletonEmissionsTracker.create_dataframe_from_task_results()
-    export_df_as_csv(df, Path(__file__).parent / ".." / "out", "emission_results.csv")
