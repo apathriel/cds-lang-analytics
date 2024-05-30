@@ -9,7 +9,7 @@ from utilities import get_logger
 
 
 logging = get_logger(__name__)
-
+logging.setLevel("CRITICAL")
 
 # Singleton class to track emissions, responsible for tracking emissions for the entire project
 class SingletonEmissionsTracker:
