@@ -196,3 +196,6 @@ def main():
         visualization_type="pie",
         save_visualization=True,
     )
+
+if __name__ == "__main__":
+    main()
