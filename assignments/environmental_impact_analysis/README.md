@@ -35,11 +35,31 @@ python src/generate_visualizations.py
 
 ## 🚀 Usage 
 
+### 📋 Data processing
+
 ### Codecarbon 
+
+### 📉 Visualizations
 
 
 ## 📊 Results
 generally about machine learning impact
 
-note on co2 eq
+note on co2 eq?
+
+
+### 🖥️ Hardware
+All the emission benchmarks were generated from running the projects on my laptop, a Clevo NP50DB model. Please see an overview of the detected parameters from codecarbon below:
+**NB**: None of the scripts included functionality for running on the system GPU, beyond any default settings from the modules. 
+| CPU | Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz |
+|-----|-------------------------------------------|
+| RAM | 7.790576934814453 GB                      |
+| GPU | 1 x NVIDIA GeForce GTX 1650 (4 GB)        |
+| OS  | Windows-11-10.0.22631-SP0                 |
+
+
+### 🗃️ Portfolio Emissions
+
+### 🗂️ Project Emissions
+
 
