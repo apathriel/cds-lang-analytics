@@ -171,7 +171,7 @@ def main():
         lowercase=True,
         max_df=0.95,
         min_df=0.05,
-        max_features=100,
+        max_features=2000,
     )
     SingletonEmissionsTracker.stop_current_task()
 
@@ -216,7 +216,7 @@ def main():
         X_train=X_train_feats,
         y_train=y_train,
         clf_parameters=parameter_space,
-        use_grid_search=True,
+        use_grid_search=False,
         grid_search_params=grid_search_parameters,
         cross_validate=True,
         cv_fold=10,

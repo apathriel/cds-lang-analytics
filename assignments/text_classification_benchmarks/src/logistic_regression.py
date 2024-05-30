@@ -122,7 +122,7 @@ def main():
         lowercase=True,
         max_df=0.95,
         min_df=0.05,
-        max_features=100,
+        max_features=2000,
     )
     SingletonEmissionsTracker.stop_current_task()
 
