@@ -98,6 +98,8 @@ def visualize_emissions_from_subtasks_by_project(
     output_dir: Path,
     visualization_type: str = "bar",
     save_visualization: bool = True,
+    file_name: str = None,
+    plot_title_at_top: bool = False,
 ) -> None:
     """
     Visualizes the emissions from subtasks by project.
@@ -111,6 +113,7 @@ def visualize_emissions_from_subtasks_by_project(
     Raises:
         ValueError: If an unsupported visualization type is provided.
     """
+    title_y_value = 0.9 if plot_title_at_top else 0.05
     projects = df["project_name"].unique()
     for project in projects:
         project_df = df[df["project_name"] == project]
@@ -125,7 +128,7 @@ def visualize_emissions_from_subtasks_by_project(
                 plt.tight_layout()
                 plot_path = output_dir / f"{project}_emissions_distribution_bar.png"
                 plt.savefig(plot_path)
-                print(f"Visualization saved to {plot_path}")
+                logger.info(f"Visualization saved to {plot_path}")
             else:
                 plt.show()
         elif visualization_type == "pie":
@@ -146,13 +149,16 @@ def visualize_emissions_from_subtasks_by_project(
                 title_text=f"Emission Distribution for Project: {project}",
                 showlegend=False,
                 title_x=0.5,  # Center the title
-                title_y=0.05,  # Position the title towards the top
+                title_y=title_y_value,  # Position the title towards the top
             )
 
             if save_visualization:
-                plot_path = output_dir / f"{project}_emissions_distribution_pie.png"
+                if file_name:
+                    plot_path = output_dir / f"{file_name}.png"
+                else:
+                    plot_path = output_dir / f"{project}_emissions_distribution_pie.png"
                 fig.write_image(str(plot_path))
-                print(f"Visualization saved to {plot_path}")
+                logger.info(f"Visualization saved to {plot_path}")
             else:
                 fig.show()
         else:
@@ -195,6 +201,17 @@ def main():
         output_dir=output_data_directory,
         visualization_type="pie",
         save_visualization=True,
+    )
+
+    # Generate visualization of neural network without grid search
+    nn_data = load_csv_as_df(input_data_directory / "neural_emission_results_no_grid_search.csv")
+    visualize_emissions_from_subtasks_by_project(
+        df = nn_data,
+        output_dir=output_data_directory,
+        visualization_type="pie",
+        save_visualization=True,
+        file_name="neural_emission_results_no_grid_search",
+        plot_title_at_top=True,
     )
 
 if __name__ == "__main__":

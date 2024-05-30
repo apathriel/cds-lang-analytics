@@ -1,12 +1,14 @@
 from pathlib import Path
 from typing import Dict, List, Union
 
+import click
 import pandas as pd
 import glob
 
 from logger_utils import get_logger
 
 logger = get_logger(__name__)
+
 
 def sum_df_column(df: pd.DataFrame, column: str) -> Union[int, float]:
     """
@@ -27,6 +29,7 @@ def sum_df_column(df: pd.DataFrame, column: str) -> Union[int, float]:
     except KeyError:
         logger.error(f"Column {column} does not exist in the DataFrame.")
         raise
+
 
 def load_csv_as_df(file_path: Path, logging_enabled: bool = False) -> pd.DataFrame:
     """
@@ -78,10 +81,10 @@ def export_df_as_csv(df: pd.DataFrame, directory: Path, filename: str) -> None:
     except OSError as e:
         logger.error(f"OS error occurred when trying to create directory: {e}")
         return
-    
+
     # Check if filename ends with .csv, if not, append it
-    if not filename.endswith('.csv'):
-        filename += '.csv'
+    if not filename.endswith(".csv"):
+        filename += ".csv"
 
     # Create the full file path
     file_path = directory / filename
@@ -94,6 +97,7 @@ def export_df_as_csv(df: pd.DataFrame, directory: Path, filename: str) -> None:
         logger.error(f"Permission denied when trying to write to file: {file_path}")
     except Exception as e:
         logger.error(f"Unexpected error occurred when trying to write to file: {e}")
+
 
 def load_csv_as_df_from_directory(
     directory: Path, return_filenames: bool = False
@@ -121,11 +125,18 @@ def load_csv_as_df_from_directory(
 
         # Load each CSV file into a DataFrame and store in a dictionary or list
         if return_filenames:
-            dataframes = {Path(file).name: load_csv_as_df(file, logging_enabled=False) for file in csv_files}
+            dataframes = {
+                Path(file).name: load_csv_as_df(file, logging_enabled=False)
+                for file in csv_files
+            }
         else:
-            dataframes = [load_csv_as_df(file, logging_enabled=False) for file in csv_files]
+            dataframes = [
+                load_csv_as_df(file, logging_enabled=False) for file in csv_files
+            ]
 
-        logger.info(f"Successfully loaded {len(dataframes)} CSV files from path: {directory}")
+        logger.info(
+            f"Successfully loaded {len(dataframes)} CSV files from path: {directory}"
+        )
         return dataframes
     except FileNotFoundError:
         logger.error(f"Directory not found: {directory}")
@@ -133,6 +144,7 @@ def load_csv_as_df_from_directory(
     except Exception as e:
         logger.error(f"Unexpected error loading CSV files from path: {e}")
         return []
+
 
 def combine_similar_dataframes(dfs: List[pd.DataFrame]) -> pd.DataFrame:
     """
@@ -155,17 +167,31 @@ def combine_similar_dataframes(dfs: List[pd.DataFrame]) -> pd.DataFrame:
     combined_df = pd.concat(dfs, ignore_index=True)
     return combined_df
 
-def main():
+
+@click.command()
+@click.option(
+    "--concat_dataframes",
+    "-c",
+    is_flag=True,
+    help="Combine all csv files in the input directory into one csv file.",
+    default=True,
+)
+def main(concat_dataframes: bool):
     # Instantiate the input data directory
     input_data_directory = Path(__file__).resolve().parents[1] / "in"
-    # Load all csv files from input directory to list of dfs
-    emission_dataframes = load_csv_as_df_from_directory(input_data_directory)
-    # Combine all dfs into one, check if match in columns
-    combined_emissions = combine_similar_dataframes(emission_dataframes)
-    # Export the combined df as a csv file
-    export_df_as_csv(combined_emissions, input_data_directory, "combined_emissions")
+    
+    if concat_dataframes:
+        # Load all csv files from input directory to list of dfs
+        emission_dataframes = load_csv_as_df_from_directory(input_data_directory)
+        # Combine all dfs into one, check if match in columns
+        combined_emissions = combine_similar_dataframes(emission_dataframes)
+        # Export the combined df as a csv file
+        export_df_as_csv(combined_emissions, input_data_directory, "combined_emissions")
+    
     # Sum the 'Emissions' column
     emissions_sum = sum_df_column(combined_emissions, "emissions")
     logger.info(f"Total emissions: {emissions_sum}")
+
+
 if __name__ == "__main__":
     main()

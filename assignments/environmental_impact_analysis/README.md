@@ -81,7 +81,7 @@ When deconstructing the projects into individual sub-tasks, the degree of divisi
 
 Thus, I've chosen to track the emissions through the `start_task()` method, and by grouping the results by project, the total emission metric for the project has been calculated for further analysis. 
 
-I feel the need to preface the forthcoming analyses and discussion by briefly contextualizing the CO$_2$eq emitted by the projects. Through summing all the emission values with the `sum_column_df` utility function, we can see that the total emissions from all the projects is 0.016379232730839334 kilograms, or 16.38 grams of CO$_2$eq.
+I feel the need to preface the forthcoming analyses and discussion by briefly contextualizing the CO$_2$eq emitted by the projects. Through summing all the emission values with the `sum_column_df` utility function, we can see that the total emissions from all the projects is 0.016379232730839334 kilograms, or 16.38 grams of CO$_2$eq. These figures seem quite unsubstantial , but obviously not reflective of the field of machine learning, limitations of the metric and tracking will be revisited. Contextualizing these values, [Meta](https://huggingface.co/meta-llama/Meta-Llama-3-70B) has reported the estimated total emissions for training Llama-3-8b and Llama-3-70B to be 2290 tonens CO$_2$eq. This is not including the emissions acrued through inference.
 
 
 ### 🖥️ Hardware
@@ -102,15 +102,45 @@ The visualizations were generated with the intent of answering the following que
 
 > Which assignment generated the most emissions in terms of CO₂eq?
 
-A tendency is immediately evident from the simple eye-test: The emotion analysis project by far the largest contributor of emissions 
 
 | Total emissions | Total emissions |
 |----------|----------|
 | ![Pie chart of portfolio emissions grouped by project](./out/emissions_by_project_pie.png)  | ![Bar chart of portfolio emissions grouped by project](./out/emissions_by_project_bar.png)   |
 
+A tendency is immediately observable from the simple eye-test: The emotion analysis project is by far the largest contributor of emissions. The project entailed processing the entire script of the Game of Thrones television show through an emotion classifcation pipeline. This project utilizes the most complicated model architecture, a large transformer model, whilst also processing a relatively large corpus.
 
+The subtask emissions were quite hard to visualize, due to the distribution of emissions being overwhelmingly emitted by the `run_emotion_analysis_pipeline` task, which consits of the model inference.
 
-### 🗂️ Project Emissions
+![Pie chart depicting the emissions produced by the emotion analysis project](./out/emotion_analysis_pipeline_emissions_distribution_pie.png)
+
+The second most computationally intensive project was the text classification task, specifically the neural network script.
+
+![Pie chart depicting the emissions produced by the neural network implementation of the text classification project](./out/neural_network_emissions_distribution_pie.png)
+
+Again, quite difficult to create a simple, easily analyzable graphic. Hoewever, looking at the visualization, it's immediately observable that the emissions produced can largely be attributed to the (optional) grid search. The grid search resulted in marginal (if any) improvements to performance, perhaps reflecting a greater trend in machine learning, where performance is prioritized above all else, even at great environmental costs only resulting in marginal improvements.
+
+![Pie chart depicting the emissions produced by the neural network implementation of the text classification project without grid search](./out/neural_emission_results_no_grid_search.png)
+
+Visualization the result of running the script without performing the grid search presents a somewhat more nuanced distribution. 29.7% of the emissions were produced from splitting and vectorizing the corpus, with an additional 2% from loading the dataset. This cost could be circumvented by vectorizing the dataset, and dumping/loading the resulting data. 
+
+59.8% of the emissions were produced from performing a 10 fold cross-validation. This functionality was implemented with the intent of producing a more robust evaluation of the model, evidently at a cost of increased emissions, although somewhat negligable at these values. 
+
+7.89% of the emissions were produced from saving the model, vectorizer and report. This attests to the computation cost of I/O operations. Perhaps this sub-task could've been further divided to examine the efficiency of the `joblib` library which was used to save the model and vectorizer.
+
+| Feature extraction | Text classification | Query expansion|
+|----------|----------|----------|
+| ![](./out/linguistic_analysis_emissions_distribution_pie.png)  | ![](./out/logistic_regression_emissions_distribution_pie.png)   | ![](./out/query_expansion_emissions_distribution_pie.png)  |
+
+The three remaining projects all have quite low emissions comparably. The feature extraction and query expansion projects utilize pre-trained models to perform comparatively simplistic tasks, resulting in lower emissions. The logistic regression implementation of the text classification project largely mirrors the neural network, altough with observably lower costs of training the classifier. This is likely due to the large amount of parameters of neural networks, even with relatively simple architectures.
+
+### 📝 Limitations
+The CodeCarbon library inevitably produces an approximation: There's obviously a large amount of parameters determining the projected CO$_2$eq, like hardware and location. That being said, by no means a fruitless approximation. The abstractions of environmental impact provided by CodeCarbon's emission tracking provides insights into the relative carbon footprint of different computational tasks. Generally, this methodology promotes awareness concerning the environmental effects of computation. Practically, this can aid developers and researchers in adopting environmentally friendly modeling choices and code efficiency in their work.
+
+CodeCarbon computed the approximated CO$_2$eq through electricity, which is an obvious metric. Other metrics like water might be considered, albeit more relevant when considering the training of LLMs.
+
+When considering these results, and generally when working with modern LLMs, the training- and inference costs are largely abstracted, or even obfuscated. This means that the energy consumption and carbon emissions associated with these processes are often not visible to users. CodeCarbon provides a tool for considering these impacts, thus aiding in the mission of reducing CO$_2$ emissions produced from machine learning.
+
 
 ## 📖 References
 - [codecarbon library](https://github.com/mlco2/codecarbon)
+- [Meta Llama 3 model card on Hugging Face](https://huggingface.co/meta-llama/Meta-Llama-3-70B)
