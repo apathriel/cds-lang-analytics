@@ -1,6 +1,5 @@
 aiofiles==23.2.1
 click==8.1.7
-codecarbon==2.4.2
 kaggle==1.6.12
 matplotlib==3.8.3
 pandas==2.2.2
@@ -8,4 +7,3 @@ tqdm==4.66.2
 transformers==4.39.3
 tf_keras==2.16.0
 tensorflow==2.16.1
-setuptools==70.0.0
