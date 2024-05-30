@@ -96,6 +96,7 @@ def main(
         )
         processed_data_path = Path(__file__).parent / ".." / "out" / processed_data_path
         df = load_csv_as_df(Path(processed_data_path))
+        print(df.head())
         SingletonEmissionsTracker.stop_current_task()
     else:
         # Load the Hugging Face model. Initialize the text classifier pipeline.
